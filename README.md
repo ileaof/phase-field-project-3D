@@ -14,6 +14,15 @@ O código executa em **CPU (OpenMP multithread)** e, de forma transparente, em
 **GPU (OpenMP *target offloading*)** — a escolha é feita **em tempo de execução**,
 a partir de um **único executável**, sem alterar o algoritmo numérico.
 
+<p align="center">
+  <img src="docs/Phasefield_Al4p5Cu_TecPlot.png" alt="Frente de solidificação dendrítica Al-4.5%Cu (campo de fase 3D) renderizada no Tecplot" width="620">
+</p>
+
+<p align="center">
+  <em>Frente de solidificação dendrítica em uma liga Al–4.5%Cu (campo de fase 3D).
+  Vermelho = sólido (&phi;≈1), azul = líquido (&phi;≈0); visualização no Tecplot.</em>
+</p>
+
 ---
 
 ## ✨ Destaques
