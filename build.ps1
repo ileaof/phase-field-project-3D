@@ -1,0 +1,1 @@
+cmd /c "call ""C:\Program Files (x86)\Intel\oneAPI\setvars.bat"" && call compile.bat"

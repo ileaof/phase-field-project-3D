@@ -1,0 +1,64 @@
+!ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+   Subroutine Saida !(JTime)
+!ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+   USE Variaveis
+   Implicit None
+   Integer :: JTime
+   Double Precision :: xp, yp, zp, C1, C2
+   CHARACTER (LEN=5)  :: tecform
+   CHARACTER (LEN=100) :: OUTPUTFILENAME
+   CHARACTER (LEN=52) :: Path_to_output
+!==================================================================================================
+
+!  Select Case (jTime)
+!	Case (1)   ! Arquivo para campos iniciais
+!		  OUTPUTFILENAME="saida_inicial.dat"
+!	Case default
+!		  OUTPUTFILENAME="saida.dat"
+! End select
+
+  write (text,'(I6)') IT
+  write (text2,'(f14.7)') time
+  text3 = adjustl('saida_'//trim(text)//'_time_'//trim(text2)//'s'//'.dat')
+!  Path_to_output = "/Users/ileao/Documents/Phase_field/Al-Cu/output/"
+  Path_to_output = "./output/"   ! forward slashes: valid on Windows AND Linux/WSL
+                                 ! (the old ".\output\" tripped nvfortran's lexer on
+                                 ! the trailing backslash before the closing quote)
+  OUTPUTFILENAME = adjustl(Path_to_output//trim(text3))
+!  OPEN(UNIT=2,FILE= "saida2017.dat" ,STATUS="unknown")     !OUTPUTFILENAME,STATUS="unknown")
+  OPEN(UNIT=2, FILE= OUTPUTFILENAME, STATUS="unknown")     !OUTPUTFILENAME,STATUS="unknown")
+  tecform="POINT"
+  WRITE(2,*)'TITLE="Phase Field"'
+  WRITE(2,4535)
+  WRITE(2,*)"ZONE"
+  WRITE(2,10001)NX,NY,NZ,tecform
+  IF(tecform == "POINT") THEN
+
+    DO k=1,NZ
+      DO j=1,NY
+        DO i=1,NX
+          xp=MAX(i-1,0)*DX
+          yp=MAX(j-1,0)*DY
+          zp=MAX(k-1,0)*DZ
+          WRITE(2,4635)Xp, Yp, Zp, phase_field_new(I,J,K),TP,Conc_Soluto_New(I,J,K) !TNEW(I,J,K)
+        END DO
+      END DO
+    END DO
+  END IF
+  WRITE(2,*)"       "
+  WRITE(2,*)"       "
+  CLOSE(UNIT=2)
+  4535   FORMAT('variables= "X","Y","Z","PhaseField","Temp","Conc_Solute"')
+  4635   FORMAT(6(1X,e14.7))
+
+10001  FORMAT( 1X,'T=" " ,I=',i4,',J=',i4,',K=',i4,',F=',a5)
+!WRITE(*,*)
+!WRITE(*,*)" +-----------------------------------------+"
+!WRITE(*,*)" |   Tecplot files has been generated......|"
+!WRITE(*,*)" +-----------------------------------------+"
+!WRITE(*,*)
+
+
+!==================================================================================================
+   End Subroutine  Saida
+!ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ

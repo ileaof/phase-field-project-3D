@@ -1,0 +1,48 @@
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++ Dados Al-Cu Side Growth ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+933.3   933.3d0              | temperatura de fus�o Tm - K |
+922    923  921d0  922D0  922d0  921.0d0    922.0d0              | temperatura inicial - T0|  TL = 921.6 K
+0.891002000d+09   0.958538790d+09   2.0343d+09           | delta_H - J/m3 |
+1.055d-03     5.3245227d-04        | E0 - (J/m)1/2 |
+673.2d+3      2642235.0534d0       | tens�o superficial w0 - J/m3 |
+1.9d-03              | mobilidade da interface M0 - m3/sJ | 
+6.59477338d-05  | difusividade termica do solido  D_s - m2/s | Paresque 2015
+3.23646776d-05   | difusividade termica do liquido D_l - m2/s | ileao_2004
+2.926560e+06  |2.9025d+06    5.36d+06 | calor especifico Cps - J/m3 K |
+2.626320e+06  |2.9025d+06    5.36d+06 | calor especifico Cpl - J/m3 K |
+50     6    300 1200                  | numero de pontos em x - Nx|
+450  150   200 800                   | numero de pontos em y - Ny|   
+900   500                             | numero de pontos em z - Nz| 
+1.5d-07  2.5d-07     9.0d-07   1.0d-07   0.5d-06   5.0d-07                | largura da malha em y - dy|.d
+1.5d-07  2.5d-07     9.0d-07   1.0d-07   0.5d-06   5.0d-07	              | largura da malha em x - dx|
+1.5d-07                                                                   | largura da malha em z - dz|
+1.d-23               | valor pequeno - small|
+4.d0                 | numero de pontas - ANI|
+1000000000            | numero de itera��o maxima - it_max|
+0.03d0  0.03d0       | amplitude do ruido -AAA|
+0.00d+00  0.d0       | direcao preferencial de crescimento em radianos - Teta_0|
+0.06d0   0.03d0      | forca de anisotropia - DELTA_EPSLON|
+1.5d-07 1.5d-06     1.67d-06             | passo no tempo- DELTA_T|
+3.0d-13  3.0d-13     | difusividade s�lido - D_sol|
+3.0d-09  3.0d-09     | difusividade l�quido - D_liq|
+0.14d0   0.14d0      | Kefetivo - Ke|
+640d0   672d0                   | inclina��o da linha liquidus - Me|
+1.130d-05   10.5d-06            | volume molar - Vm|
+8.31451D0                     | constante dos gases - R| 
+0.0196d0   1.96d-02             | concentra��o inicial de soluto - C0|
+4.d0   2.0d0  1.D0  4   2.0d0                | Thin_Interface
+0.093d+0              | Sigma - J /m2
+1    2.5D0     2.5d0   10.d0   1.0d0                | Beta 
+2.d0                  | ajuste
+0.5d0 0.02250300d0  24.0d-06   0.105d0             | tempo de parada em s - stoptime
+500                                          | Numeros de D_time para escrever arquivo de saida
+
+
+
+
+
+
+
+
+
