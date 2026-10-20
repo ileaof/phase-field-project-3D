@@ -49,7 +49,9 @@
   WRITE(2,*)"       "
   CLOSE(UNIT=2)
   4535   FORMAT('variables= "X","Y","Z","PhaseField","Temp","Conc_Solute"')
-  4635   FORMAT(6(1X,e14.7))
+! ES15.7E3: expoente de 3 digitos COM a letra E. O e14.7 anterior escrevia
+! valores < 1e-99 como "0.1685798-084" (sem E), que Tecplot/awk leem como 0.17.
+  4635   FORMAT(6(1X,ES15.7E3))
 
 10001  FORMAT( 1X,'T=" " ,I=',i4,',J=',i4,',K=',i4,',F=',a5)
 !WRITE(*,*)

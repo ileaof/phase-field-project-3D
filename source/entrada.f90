@@ -4,6 +4,11 @@ use variaveis
 
 implicit none
 double precision :: Teta0_inic
+integer :: ios_tp
+! Condicao inicial: tipo_inicial = 0 -> frente plana em j<=4 (original);
+!                   tipo_inicial = 1 -> semente esferica no centro do dominio
+integer :: tipo_inicial, ic, jc, kc
+double precision :: R_semente, dist2
 
 !open (unit=1,file='/Users/ileao/Documents/Phase_field/Al-Cu/source/entrada.dat')
 open (unit=1,file='entrada.dat')
@@ -47,6 +52,21 @@ read (1,*) Beta
 read (1,*) ajuste
 read (1,*) stoptime
 read (1,*) WriteFileD_timeCounter
+! TP: temperatura isotermica usada nas equacoes de fase e soluto. Linha opcional
+! para manter compatibilidade com entrada.dat antigos: se faltar, usa 919 K
+! (o valor que antes ficava fixo em principal.f90).
+read (1,*,iostat=ios_tp) TP
+if (ios_tp /= 0) then
+    TP = 919.0d0
+    write(*,"('AVISO: linha TP ausente no entrada.dat -- usando TP = 919.0 K')")
+end if
+! Linha opcional: tipo de condicao inicial e raio da semente (em celulas).
+! Se faltar, mantem a frente plana original.
+read (1,*,iostat=ios_tp) tipo_inicial, R_semente
+if (ios_tp /= 0) then
+    tipo_inicial = 0
+    R_semente    = 0.d0
+end if
 
 
 close (unit=1)
@@ -87,7 +107,15 @@ write(*,"('Thin_Interface = ',F14.3,' molar fraction')")Thin_Interface
 write(*,"('Sigma = ',F14.3,' J/m^2')")Sigma
 write(*,"('ajuste',F14.3,' -')")ajuste
 write(*,"('stoptime',F14.3,' s')")stoptime
-write(*,"('WriteFileD_timeCounter',I4,' -')")WriteFileD_timeCounter
+write(*,"('WriteFileD_timeCounter',I8,' -')")WriteFileD_timeCounter
+write(*,"('TP = ',F14.2,' K  (Cl_eq = ',F10.6,', TL(C0) = ',F10.2,' K)')") TP, (Tm-TP)/Me, Tm-Me*C0
+if (tipo_inicial == 2) then
+    write(*,"('Condicao inicial: 1/8 de semente no canto (3,3,3), raio = ',F6.1,' celulas')") R_semente
+else if (tipo_inicial == 1) then
+    write(*,"('Condicao inicial: semente esferica central, raio = ',F6.1,' celulas')") R_semente
+else
+    write(*,"('Condicao inicial: frente plana (j<=4)')")
+end if
 
 write(*,"(/,'### Fim Leitura de Entrada de Dados ###',/)")
 
@@ -111,7 +139,9 @@ write(*,"(/,'### Fim Leitura de Entrada de Dados ###',/)")
     !DELTA_T = (DX*DX)/(20.d0*D_LIQ) !Data Sim 00
     !DELTA_T = (DX*DX)/(30.d0*D_LIQ) !Data Sim 01
     !DELTA_T = (DX*DX)/(40.d0*D_LIQ)  !Data Sim 02
-    DELTA_T = (DX*DX)/(50.d0*D_LIQ)  !Data Sim 03
+    !DELTA_T = (DX*DX)/(50.d0*D_LIQ)  !Data Sim 03
+    !DELTA_T = (DX*DX)/(60.d0*D_LIQ)  !Data Sim 03
+    DELTA_T = (DX*DX)/(12.d0*D_LIQ)  ! metade do limite 3D (1/6); 5x mais rapido que /60
    
 
 
@@ -151,14 +181,26 @@ allocate(conc_soluto_new(1:Nx, 1:Ny, 1:Nz), conc_soluto_old(1:Nx, 1:Ny, 1:Nz))
 ! equacao_campo_fase), so it was previously read uninitialized on IT=1 -- closed as a
 ! safe, behavior-preserving-in-intent fix (zero is what an unwritten DPP should mean:
 ! no phase-field change yet).
+ic = Nx/2 ; jc = Ny/2 ; kc = Nz/2
+! tipo_inicial = 2: semente no canto (1/8 de semente). As paredes de fluxo zero
+! funcionam como planos de simetria, dobrando o alcance de cada braco.
+if (tipo_inicial == 2) then
+    ic = 3 ; jc = 3 ; kc = 3
+end if
+
 !$omp parallel default(none) &
 !$omp shared(phase_field_old,phase_field_new,TNEW,TOLD,conc_soluto_new,conc_soluto_old,DPP) &
-!$omp shared(T0,C0,Ke,Nx,Ny,Nz) private(i,j,k)
+!$omp shared(T0,C0,Ke,Nx,Ny,Nz,tipo_inicial,R_semente,ic,jc,kc) private(i,j,k,dist2)
 !$omp do collapse(2) schedule(static)
 do k=1,Nz
   do j=1,Ny
     do i=1,Nx
-      if (j<=4) then
+      if (tipo_inicial >= 1) then
+        dist2 = dble(i-ic)**2 + dble(j-jc)**2 + dble(k-kc)**2
+      else
+        dist2 = huge(1.d0)
+      end if
+      if ((tipo_inicial == 0 .and. j<=4) .or. dist2 <= R_semente**2) then
         phase_field_old(i,j,k) = 1.d0
         conc_soluto_old(i,j,k) = Ke*C0
       else

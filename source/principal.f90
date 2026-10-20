@@ -98,7 +98,8 @@ Do it=1, it_max
             !!call Calc_Temperature  ! Estava comentada
             !!TNEW = T_
 
-            TP = 919.0d0 !T0 - 19.84d0*DELTA_T*IT          !0.005*DELTA_T*IT   !83.3333D0
+            ! TP (temperatura isotermica do banho) agora e lido do entrada.dat em entrada.f90
+            ! (antes: TP = 919.0d0 fixo aqui). Historico: !T0 - 19.84d0*DELTA_T*IT
 
             !========================================================================================
             !DIF_CONC=ABS(C_NEW-C0)

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ajuda — Phase-Field 3D (CPU OpenMP / GPU)</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #1d2430; --muted: #5b6472;
+    --accent: #0b62d6; --accent-soft: #e8f1fd; --border: #dfe3ea;
+    --code-bg: #f0f2f5; --ok: #0a7d38; --ok-soft: #e7f5ec;
+    --warn: #9a6700; --warn-soft: #fff4d6;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --card: #1c2129; --ink: #e6e9ee; --muted: #9aa3b0;
+      --accent: #5ea1f5; --accent-soft: #1d2c40; --border: #2c333d;
+      --code-bg: #232a33; --ok: #4cc47e; --ok-soft: #17301f;
+      --warn: #d9a62e; --warn-soft: #33290f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.65 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 24px 16px 64px;
+  }
+  main { max-width: 900px; margin: 0 auto; }
+  header.hero {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px 28px 20px; margin-bottom: 24px;
+  }
+  h1 { margin: 0 0 6px; font-size: 26px; }
+  .hero p { margin: 0; color: var(--muted); }
+  h2 {
+    font-size: 20px; margin: 36px 0 12px; padding-bottom: 6px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  section {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 8px 28px 20px; margin-bottom: 18px;
+  }
+  code {
+    font-family: Consolas, "Cascadia Code", Menlo, monospace;
+    background: var(--code-bg); border-radius: 5px; padding: 1px 6px;
+    font-size: 13px;
+  }
+  pre {
+    background: #000000; color: #ffffff; border: 1px solid #333333;
+    border-radius: 8px; padding: 14px 16px; overflow-x: auto;
+    font-size: 13px; line-height: 1.55;
+  }
+  pre code { background: none; padding: 0; color: #ffffff; }
+  pre em { color: #9aa3b0; }
+  .prompt::before { content: "PS> "; color: #9aa3b0; user-select: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0; }
+  th, td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); }
+  .box {
+    border-radius: 8px; padding: 12px 16px; margin: 14px 0;
+    border: 1px solid var(--border); font-size: 14px;
+  }
+  .box.ok { background: var(--ok-soft); border-color: var(--ok); }
+  .box.warn { background: var(--warn-soft); border-color: var(--warn); }
+  .box b:first-child { display: inline-block; margin-right: 6px; }
+  nav.toc {
+    background: var(--accent-soft); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 24px; margin-bottom: 24px;
+  }
+  nav.toc h2 { border: none; margin: 0 0 8px; font-size: 16px; }
+  nav.toc ol { margin: 0; padding-left: 22px; columns: 2; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  kbd {
+    background: var(--code-bg); border: 1px solid var(--border); border-bottom-width: 2px;
+    border-radius: 4px; padding: 0 5px; font-size: 12px; font-family: inherit;
+  }
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .4px;
+    border-radius: 20px; padding: 1px 9px; margin-left: 8px; vertical-align: 2px;
+  }
+  .tag.req { background: var(--warn-soft); color: var(--warn); }
+  .tag.opt { background: var(--ok-soft); color: var(--ok); }
+  @media (max-width: 640px) { nav.toc ol { columns: 1; } section { padding: 6px 18px 16px; } }
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <h1>🔧 Ajuda — Phase-Field 3D (Al–Cu)</h1>
+  <p>Como compilar e rodar o solver 3D de campo de fase (fase + soluto +
+  temperatura, diferenças finitas, Fortran) em <b>CPU com OpenMP</b> ou na
+  <b>placa gráfica</b> (OpenMP <i>target offload</i>). O mesmo código-fonte serve
+  aos dois caminhos: o executável detecta a GPU em tempo de execução
+  (<code>omp_get_num_devices()</code>) e, se não houver, roda em CPU.</p>
+</header>
+
+<nav class="toc">
+  <h2>Sumário</h2>
+  <ol>
+    <li><a href="#requisitos">Requisitos</a></li>
+    <li><a href="#estrutura">Estrutura do projeto</a></li>
+    <li><a href="#inicio-rapido">Início rápido (cola)</a></li>
+    <li><a href="#gpu-nvidia">GPU NVIDIA (WSL2 + nvfortran)</a></li>
+    <li><a href="#cpu">CPU OpenMP (Windows + ifx)</a></li>
+    <li><a href="#threads">Threads e afinidade (OpenMP)</a></li>
+    <li><a href="#gpu-intel">GPU Intel (ifx, spir64)</a></li>
+    <li><a href="#config">Arquivo de entrada (entrada.dat)</a></li>
+    <li><a href="#saidas">Saídas e monitoramento</a></li>
+    <li><a href="#desempenho">Desempenho e memória</a></li>
+    <li><a href="#solucao-problemas">Solução de problemas</a></li>
+  </ol>
+</nav>
+
+<!-- ================================================================= -->
+<section id="requisitos">
+  <h2>1. Requisitos</h2>
+  <table>
+    <tr><th>Alvo</th><th>Ambiente</th><th>Compilador</th></tr>
+    <tr><td><b>GPU NVIDIA</b> <span class="tag opt">recomendado</span></td>
+        <td>WSL2 Ubuntu + driver NVIDIA do Windows</td>
+        <td>NVIDIA HPC SDK (<code>nvfortran</code>) em
+        <code>/opt/nvidia/hpc_sdk/Linux_x86_64/&lt;versão&gt;</code></td></tr>
+    <tr><td><b>CPU OpenMP</b></td>
+        <td>Windows (PowerShell / cmd)</td>
+        <td>Intel oneAPI <code>ifx</code> + Visual Studio 2022 (linker)</td></tr>
+    <tr><td><b>GPU Intel</b> <span class="tag req">fp64</span></td>
+        <td>Windows</td>
+        <td><code>ifx</code> com <code>-Qopenmp-targets:spir64</code></td></tr>
+  </table>
+  <p>Placa desta máquina: <b>NVIDIA GeForce RTX 4050 Laptop GPU (6 GB)</b>,
+  compute capability 8.9. Confira a qualquer momento com:</p>
+<pre><code>nvidia-smi</code></pre>
+  <div class="box warn"><b>Nota:</b> a iGPU Intel Iris Xe <u>não</u> tem fp64 em
+  hardware e todos os kernels são em precisão dupla — use a GPU NVIDIA ou a CPU.</div>
+</section>
+
+<!-- ================================================================= -->
+<section id="estrutura">
+  <h2>2. Estrutura do projeto</h2>
+<pre><code>phasefield/
+├── source/
+│   ├── principal.f90             <em># laço temporal, escolha CPU/GPU, timing/log</em>
+│   ├── variaveis.f90             <em># módulo de variáveis globais + RNG (declare target)</em>
+│   ├── entrada.f90               <em># lê entrada.dat, aloca e inicializa os campos</em>
+│   ├── W0_E0.f90  auxiliar.f90   <em># W0, E0 e mobilidade M0</em>
+│   ├── equacao_campo_fase.f90    <em># kernel da fase (anisotropia cúbica)</em>
+│   ├── concentracao_soluto.f90   <em># kernel do soluto</em>
+│   ├── temperatura.f90           <em># kernel do calor</em>
+│   ├── diagnosticos.f90          <em># L2, min/max, soluto total, energia livre</em>
+│   ├── saida.f90                 <em># grava ./output/saida_*.dat (Tecplot POINT)</em>
+│   └── *_body.inc                <em># corpo único dos kernels (CPU e GPU idênticos)</em>
+├── entrada.dat                   <em># parâmetros físicos, malha, tempo</em>
+├── phasefield_gpu.sh             <em># build + run na GPU NVIDIA (WSL2)</em>
+├── parallel_compile.bat          <em># build CPU OpenMP  → phasefield3d_omp.exe</em>
+├── compile_gpu.bat               <em># build GPU Intel   → phasefield3d_gpu.exe</em>
+├── setvars.bat                   <em># carrega o ambiente Intel oneAPI</em>
+├── set_OpenMP_environment.bat    <em># OMP_NUM_THREADS / PROC_BIND / PLACES</em>
+├── show_OpenMP_environment.bat   <em># mostra as variáveis OpenMP atuais</em>
+├── output/                       <em># snapshots (grandes; fora do git)</em>
+└── performance_log.txt           <em># log acumulado de desempenho do run</em></code></pre>
+  <div class="box warn"><b>Obsoletos:</b> <code>compile.bat</code> e
+  <code>build.ps1</code> são da versão 2D (geram <code>phasefield2d.exe</code>,
+  sem OpenMP e sem <code>diagnosticos.f90</code>). Use
+  <code>parallel_compile.bat</code> no lugar.</div>
+</section>
+
+<!-- ================================================================= -->
+<section id="inicio-rapido">
+  <h2>3. Início rápido (cola)</h2>
+
+  <h3>Na GPU NVIDIA (terminal WSL / Ubuntu)</h3>
+<pre><code>cd /mnt/c/Users/ileao/OneDrive/Documentos/phasefield
+bash phasefield_gpu.sh build      <em># compila → phasefield3d_gpu_wsl</em>
+bash phasefield_gpu.sh run 30     <em># teste rápido: para sozinho após 30 s</em>
+bash phasefield_gpu.sh run        <em># run completo (até stoptime; Ctrl+C para parar)</em></code></pre>
+
+  <h3>Na CPU com OpenMP (Prompt de Comando <code>cmd</code>, na pasta do projeto)</h3>
+<pre><code>call setvars.bat                  <em>:: ambiente Intel oneAPI (uma vez por janela)</em>
+call parallel_compile.bat         <em>:: compila → phasefield3d_omp.exe</em>
+call set_OpenMP_environment.bat   <em>:: 8 threads, fixadas nos núcleos</em>
+phasefield3d_omp.exe</code></pre>
+
+  <div class="box ok"><b>Como saber onde está rodando:</b> logo no início o
+  programa imprime uma das duas linhas abaixo; o mesmo aparece em
+  <code>Execution Device</code> no resumo de cada escrita.
+<pre><code>### GPU offload ENABLED -- 1 OpenMP target device(s) detected ###
+### No OpenMP target device -- running CPU OpenMP path ###</code></pre></div>
+</section>
+
+<!-- ================================================================= -->
+<section id="gpu-nvidia">
+  <h2>4. GPU NVIDIA (WSL2 + nvfortran)</h2>
+
+  <h3>Abrir o terminal</h3>
+  <p>No Windows: menu Iniciar → <b>Ubuntu</b> (ou <code>wsl</code> no
+  PowerShell). Os discos do Windows ficam em <code>/mnt/c/…</code>.</p>
+
+  <h3>Comandos do script <code>phasefield_gpu.sh</code></h3>
+  <table>
+    <tr><th>Comando</th><th>O que faz</th></tr>
+    <tr><td><code>bash phasefield_gpu.sh</code></td><td>compila se ainda não
+        existir o executável e roda</td></tr>
+    <tr><td><code>bash phasefield_gpu.sh build</code></td><td>só compila
+        (<code>nvfortran -mp=gpu -gpu=ccXX,cudaYY -O3</code>)</td></tr>
+    <tr><td><code>bash phasefield_gpu.sh run</code></td><td>só roda (exige build
+        anterior)</td></tr>
+    <tr><td><code>bash phasefield_gpu.sh run 60</code></td><td>roda e encerra após
+        60 s (teste)</td></tr>
+    <tr><td><code>bash phasefield_gpu.sh rebuild</code></td><td>recompila do zero e
+        roda — use <b>sempre que alterar um <code>.f90</code>/<code>.inc</code></b></td></tr>
+  </table>
+
+  <p>O script detecta sozinho a versão do HPC SDK, o CUDA empacotado e a compute
+  capability da placa. Variáveis para forçar outro comportamento:</p>
+  <table>
+    <tr><th>Variável</th><th>Efeito</th></tr>
+    <tr><td><code>CC=89</code></td><td>força a compute capability (RTX 40xx = 89,
+        A100 = 80)</td></tr>
+    <tr><td><code>STRICT=0</code></td><td>permite cair na CPU se a GPU falhar. Por
+        padrão (<code>STRICT=1</code>) o script exporta
+        <code>OMP_TARGET_OFFLOAD=MANDATORY</code> e o programa <b>aborta</b> em vez
+        de rodar silenciosamente na CPU</td></tr>
+  </table>
+<pre><code>CC=89 bash phasefield_gpu.sh rebuild
+STRICT=0 bash phasefield_gpu.sh run</code></pre>
+
+  <h3>Rodar em segundo plano (sobrevive ao fechar o terminal)</h3>
+<pre><code>nohup bash phasefield_gpu.sh run &gt; run.log 2&gt;&amp;1 &amp;
+tail -f run.log                   <em># acompanhar; Ctrl+C sai do tail, não do run</em>
+tail -f performance_log.txt       <em># só os resumos de desempenho</em>
+pkill phasefield3d_gpu_wsl        <em># encerrar o run</em></code></pre>
+
+  <h3>Acompanhar a placa</h3>
+<pre><code>watch -n 2 nvidia-smi             <em># uso da GPU (%) e memória ocupada</em></code></pre>
+
+  <div class="box warn"><b>WSL2:</b> o driver CUDA (<code>libcuda.so.1</code>) fica
+  em <code>/usr/lib/wsl/lib</code>. O script já põe essa pasta no
+  <code>LD_LIBRARY_PATH</code>. Se você chamar <code>./phasefield3d_gpu_wsl</code>
+  diretamente, sem o script, o runtime pode ver 0 dispositivos e rodar na CPU.</div>
+
+  <h3>Forçar CPU usando o binário da GPU</h3>
+<pre><code>OMP_TARGET_OFFLOAD=DISABLED OMP_NUM_THREADS=8 ./phasefield3d_gpu_wsl</code></pre>
+</section>
+
+<!-- ================================================================= -->
+<section id="cpu">
+  <h2>5. CPU OpenMP (Windows + ifx)</h2>
+
+  <h3>1. Carregar o ambiente Intel</h3>
+  <p>Abra um <b>Prompt de Comando (cmd)</b> na pasta do projeto e rode:</p>
+<pre><code>cd C:\Users\ileao\OneDrive\Documentos\phasefield
+call setvars.bat</code></pre>
+  <p>Isso chama <code>C:\Program Files (x86)\Intel\oneAPI\setvars.bat</code>
+  (ifx + linker do Visual Studio). Vale só para aquela janela. Alternativa: menu
+  Iniciar → <b>Intel oneAPI command prompt for Intel 64 for Visual Studio 2022</b>.</p>
+
+  <h3>2. Compilar</h3>
+<pre><code>call parallel_compile.bat</code></pre>
+  <p>Equivale a:</p>
+<pre><code>ifx -Qopenmp -O2 source\variaveis.f90 source\auxiliar.f90 ^
+    source\concentracao_soluto.f90 source\diagnosticos.f90 source\entrada.f90 ^
+    source\equacao_campo_fase.f90 source\principal.f90 source\saida.f90 ^
+    source\temperatura.f90 source\W0_E0.f90 -o phasefield3d_omp.exe</code></pre>
+  <div class="box warn"><b>Atenção:</b> no Windows a opção é
+  <code>-Qopenmp</code> com <b>Q maiúsculo</b>. Com <code>-qopenmp</code> o ifx
+  ignora e o executável sai <u>serial</u>. Opcional: <code>-QxHost</code> otimiza
+  para o processador desta máquina.</div>
+
+  <h3>3. Configurar threads e rodar</h3>
+<pre><code>call set_OpenMP_environment.bat
+phasefield3d_omp.exe</code></pre>
+  <p>Para guardar a saída da tela em arquivo:</p>
+<pre><code>phasefield3d_omp.exe &gt; run.log 2&gt;&amp;1</code></pre>
+
+  <h3>Pelo PowerShell</h3>
+<pre><code><span class="prompt"></span>cmd /c "call setvars.bat &amp;&amp; call parallel_compile.bat"
+<span class="prompt"></span>$env:OMP_NUM_THREADS = 8; $env:OMP_PROC_BIND = "close"; $env:OMP_PLACES = "cores"
+<span class="prompt"></span>$env:PATH = "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\bin;$env:PATH"
+<span class="prompt"></span>.\phasefield3d_omp.exe</code></pre>
+  <p>A terceira linha só é necessária se aparecer erro de
+  <code>libiomp5md.dll</code> não encontrada.</p>
+
+  <h3>CPU no WSL (alternativa)</h3>
+  <p>Com o binário do <code>phasefield_gpu.sh</code> e
+  <code>OMP_TARGET_OFFLOAD=DISABLED</code> — ver <a href="#gpu-nvidia">§ 4</a>.</p>
+</section>
+
+<!-- ================================================================= -->
+<section id="threads">
+  <h2>6. Threads e afinidade (OpenMP)</h2>
+  <table>
+    <tr><th>Variável</th><th>Valor usado</th><th>Significado</th></tr>
+    <tr><td><code>OMP_NUM_THREADS</code></td><td><code>8</code></td><td>número de
+        threads (comece pelo número de núcleos <i>físicos</i>)</td></tr>
+    <tr><td><code>OMP_PROC_BIND</code></td><td><code>close</code></td><td>fixa cada
+        thread num núcleo, vizinhas entre si</td></tr>
+    <tr><td><code>OMP_PLACES</code></td><td><code>cores</code></td><td>uma thread por
+        núcleo físico (sem hyper-threading)</td></tr>
+    <tr><td><code>KMP_AFFINITY</code></td><td>(alternativa Intel)</td><td><code>granularity=fine,compact,1,0</code></td></tr>
+  </table>
+<pre><code>call set_OpenMP_environment.bat     <em>:: define e mostra os valores</em>
+call show_OpenMP_environment.bat    <em>:: só mostra</em></code></pre>
+  <div class="box ok"><b>Por que fixar:</b> sem <code>OMP_PROC_BIND</code> /
+  <code>OMP_PLACES</code>, 8 threads chegaram a rodar <u>mais devagar</u> que 4
+  nesta máquina (threads migrando entre núcleos). Ao trocar o número de threads,
+  compare o <code>Average Time/Step</code> do log.</div>
+</section>
+
+<!-- ================================================================= -->
+<section id="gpu-intel">
+  <h2>7. GPU Intel (ifx, spir64)</h2>
+<pre><code>call setvars.bat
+call compile_gpu.bat              <em>:: → phasefield3d_gpu.exe</em>
+set LIBOMPTARGET_DEBUG=1          <em>:: opcional: mostra o uso do dispositivo</em>
+phasefield3d_gpu.exe</code></pre>
+  <p>Compila com <code>-Qiopenmp -Qopenmp-targets:spir64</code>. Sem GPU Intel com
+  fp64, o mesmo executável roda no caminho CPU. Nesta máquina use a NVIDIA
+  (<a href="#gpu-nvidia">§ 4</a>).</p>
+</section>
+
+<!-- ================================================================= -->
+<section id="config">
+  <h2>8. Arquivo de entrada (<code>entrada.dat</code>)</h2>
+  <p>Lido da <b>pasta de onde o programa é chamado</b>. Cada linha: o
+  <b>primeiro número</b> é o valor usado; o resto da linha (outros números,
+  comentário após <code>|</code>) é ignorado. As 3 primeiras linhas são
+  cabeçalho.</p>
+  <table>
+    <tr><th>Parâmetro</th><th>Observação</th></tr>
+    <tr><td><code>Nx, Ny, Nz</code></td><td>pontos da malha; o crescimento parte do
+        plano <code>j ≤ 4</code> (direção y)</td></tr>
+    <tr><td><code>dx, dy, dz</code></td><td>espaçamento [m]</td></tr>
+    <tr><td><code>DELTA_T</code></td><td><b>ignorado</b>: recalculado em
+        <code>entrada.f90</code> como <code>dx²/(12·D_liq)</code> (metade do limite
+        de estabilidade 3D)</td></tr>
+    <tr><td><code>DELTA_EPSLON</code></td><td>força da anisotropia cúbica</td></tr>
+    <tr><td><code>Thin_Interface</code></td><td>espessura da interface =
+        valor × dx</td></tr>
+    <tr><td><code>ajuste</code></td><td>multiplica E0 (tensão superficial
+        efetiva) e M0</td></tr>
+    <tr><td><code>stoptime</code></td><td>tempo físico de parada [s]</td></tr>
+    <tr><td><code>WriteFileD_timeCounter</code></td><td>nº de passos entre
+        escritas</td></tr>
+    <tr><td><code>TP</code> (última linha)</td><td>temperatura isotérmica [K]
+        usada nas equações de fase e soluto. Se a linha faltar, usa 919 K e
+        avisa na tela. O início do run mostra <code>TP</code>,
+        <code>Cl_eq</code> e a liquidus <code>TL(C0) = Tm − Me·C0</code>:
+        super-resfriamento = <code>TL(C0) − TP</code></td></tr>
+  </table>
+  <p>Linha seguinte ao <code>TP</code> (opcional): <code>tipo_inicial  R_semente</code>
+  — <code>0</code> = frente plana em <code>j ≤ 4</code>; <code>1</code> = semente
+  esférica no centro com raio <code>R_semente</code> (em células). Convenção do
+  arquivo: o valor usado vem primeiro, os anteriores ficam ao lado. O original
+  está em <code>entrada.dat.backup</code>.</p>
+  <div class="box warn"><b>Atenção:</b> o <code>T0</code> do arquivo
+  <u>não</u> controla o super-resfriamento — quem controla é o
+  <code>TP</code>.</div>
+  <p>Mudou só o <code>entrada.dat</code>? Não precisa recompilar — basta rodar
+  de novo.</p>
+
+  <h3>Casos em pastas separadas</h3>
+  <p>O programa lê <code>./entrada.dat</code> e grava em <code>./output/</code>
+  da pasta atual, então cada caso pode ter sua pasta. Exemplo:
+  <code>casos/teste_dendrita/</code> (200×400×200, <code>ajuste = 1</code>,
+  <code>TP = 915 K</code>):</p>
+<pre><code><em># WSL / GPU (compile antes com: bash phasefield_gpu.sh build)</em>
+cd casos/teste_dendrita
+OMP_TARGET_OFFLOAD=MANDATORY LD_LIBRARY_PATH=/usr/lib/wsl/lib:$LD_LIBRARY_PATH \
+    ../../phasefield3d_gpu_wsl
+
+<em>:: Windows / CPU</em>
+cd casos\teste_dendrita
+..\..\phasefield3d_omp.exe</code></pre>
+  <div class="box warn"><b>WSL:</b> rodando o binário direto (fora do script), o
+  <code>LD_LIBRARY_PATH</code> precisa incluir também as bibliotecas do HPC SDK
+  se der erro de <code>.so</code> não encontrada — o mais simples é copiar
+  <code>phasefield_gpu.sh</code> e o executável para a pasta do caso e usar
+  <code>bash phasefield_gpu.sh run</code> lá.</div>
+</section>
+
+<!-- ================================================================= -->
+<section id="saidas">
+  <h2>9. Saídas e monitoramento</h2>
+  <table>
+    <tr><th>Arquivo</th><th>Conteúdo</th></tr>
+    <tr><td><code>output/saida_&lt;IT&gt;_time_&lt;t&gt;s.dat</code></td><td>campos
+        em Tecplot POINT: <code>X, Y, Z, PhaseField, Temp, Conc_Solute</code>
+        (~1–2 GB cada)</td></tr>
+    <tr><td><code>performance_log.txt</code></td><td>recriado a cada run; recebe,
+        a cada escrita, diagnósticos (L2, φ min/max, soluto total, energia livre)
+        e o bloco de tempo</td></tr>
+  </table>
+  <div class="box warn"><b>A pasta <code>output/</code> precisa existir.</b> O
+  script da GPU cria; no Windows crie com <code>mkdir output</code> antes do
+  primeiro run.</div>
+
+  <h3>Bloco de tempo (a cada escrita)</h3>
+<pre><code>Execution Device       : GPU (OpenMP target offload)
+Average Time/Step      : 0.93047 s
+Completed              : 1.37 %
+Estimated Remaining    : 3672975.9 s</code></pre>
+  <p>Use <code>Average Time/Step</code> para comparar CPU × GPU e números de
+  threads. A estimativa de tempo restante usa o <code>stoptime</code>.</p>
+</section>
+
+<!-- ================================================================= -->
+<section id="desempenho">
+  <h2>10. Desempenho e memória</h2>
+  <ul>
+    <li><b>Memória</b> ≈ Nx·Ny·Nz × 7 campos × 8 bytes na GPU
+        (mais ~4 campos na RAM). Ex.: 50×450×900 ≈ 20 milhões de pontos →
+        ~1,1 GB na GPU. A RTX 4050 tem 6 GB: até ~100 milhões de pontos.</li>
+    <li><b>OneDrive + WSL</b> é lento (ponte 9p e sincronização). Para runs
+        longos, copie para o Linux e rode lá:
+<pre><code>cp -r /mnt/c/Users/ileao/OneDrive/Documentos/phasefield ~/phasefield
+cd ~/phasefield &amp;&amp; bash phasefield_gpu.sh rebuild
+<em># depois: copiar os resultados de volta</em>
+cp ~/phasefield/output/*.dat /mnt/c/Users/ileao/Documents/resultados/</code></pre></li>
+    <li><b>Snapshots</b> são o maior custo de disco. Aumente
+        <code>WriteFileD_timeCounter</code> para escrever menos.</li>
+    <li>Pause a sincronização do OneDrive durante runs que escrevem em
+        <code>output/</code>.</li>
+  </ul>
+</section>
+
+<!-- ================================================================= -->
+<section id="solucao-problemas">
+  <h2>11. Solução de problemas</h2>
+  <table>
+    <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+    <tr><td><code>No OpenMP target device -- running CPU OpenMP path</code> no
+        binário da GPU</td><td>rodou sem o script (falta
+        <code>/usr/lib/wsl/lib</code>) ou o driver NVIDIA do Windows não está
+        visível no WSL — teste <code>nvidia-smi</code> no Ubuntu; rode via
+        <code>bash phasefield_gpu.sh run</code></td></tr>
+    <tr><td>aborta com erro de offload (<code>MANDATORY</code>)</td><td>a GPU não
+        pôde ser usada; confira <code>nvidia-smi</code>, ou
+        <code>CC=89 bash phasefield_gpu.sh rebuild</code>; para aceitar CPU:
+        <code>STRICT=0</code></td></tr>
+    <tr><td><code>nvfortran not found</code> / <code>HPC SDK not found</code></td><td>HPC
+        SDK não instalado em <code>/opt/nvidia/hpc_sdk/Linux_x86_64</code> —
+        instale ou ajuste <code>HPC_BASE</code> no script</td></tr>
+    <tr><td><code>'ifx' não é reconhecido</code></td><td>faltou
+        <code>call setvars.bat</code> nesta janela</td></tr>
+    <tr><td><code>libiomp5md.dll</code> não encontrada</td><td>rode de uma janela
+        onde o <code>setvars.bat</code> foi chamado, ou ponha
+        <code>…\oneAPI\compiler\latest\bin</code> no <code>PATH</code></td></tr>
+    <tr><td>só 1 núcleo ocupado no Gerenciador de Tarefas</td><td>compilado com
+        <code>-qopenmp</code> minúsculo ou sem a opção — recompile com
+        <code>parallel_compile.bat</code>; confira
+        <code>OMP_NUM_THREADS</code></td></tr>
+    <tr><td>8 threads mais lento que 4</td><td>threads sem afinidade — use
+        <code>set_OpenMP_environment.bat</code> (<a href="#threads">§ 6</a>)</td></tr>
+    <tr><td>erro ao abrir arquivo em <code>./output/</code></td><td>pasta não
+        existe — <code>mkdir output</code></td></tr>
+    <tr><td>erro de leitura no início (<code>entrada.dat</code>)</td><td>programa
+        chamado de outra pasta, ou linha faltando/fora de ordem no arquivo</td></tr>
+    <tr><td>out of memory na GPU</td><td>malha grande demais para 6 GB — reduza
+        Nx·Ny·Nz (<a href="#desempenho">§ 10</a>)</td></tr>
+    <tr><td>mudei o código e nada mudou</td><td>esqueceu de recompilar —
+        <code>bash phasefield_gpu.sh rebuild</code> ou
+        <code>parallel_compile.bat</code></td></tr>
+  </table>
+</section>
+
+</main>
+</body>
+</html>
