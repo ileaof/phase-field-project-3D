@@ -88,3 +88,23 @@ Monitor encerrado em 2026-10-20 20:22.
 Nao formou dendrita: o run 2 gerou um cristal octaedrico arredondado, com pontas <100> e faces convexas, sem pescoco nem bracos secundarios. Razao eixo/diag 1,54 (octaedro = 1,73). Na secao k=3 a meia-largura cai quase linearmente de 179 para 0 entre x=0 e x=180.
 
 Causa provavel: o comprimento de estabilidade de Mullins-Sekerka, 2*pi*sqrt(d0*D/V) ~ 0,3 um, e menor que a espessura da interface W = 4dx = 0,6 um, entao a malha nao resolve a instabilidade que gera os bracos. Com d0 real (~1 nm), resolver isso exige o modelo quantitativo de Karma (anti-trapping + W/d0 ~ 10-50) ou uma malha muito mais fina.
+
+## run3_karma_200 (karma/karma3d.f90 -- modelo quantitativo de Karma)
+
+Modelo de Karma (2001) / Echebarria-Folch-Karma-Plapp (2004), liga Al-Cu isotermica, anti-trapping, cinetica nula. 200^3, 1/8 de semente no canto, dx = 0,8 W, dt = 0,008 tau0, lambda = 4, eps4 = 0,02, Fnoise = 0,01.
+TP = 909,5 K -> Omega = 0,55; d0 = 4,76 nm, W = 21,5 nm, tau0 = 0,39 us; dominio 3,45 um.
+
+| Passo | t (tau0) | t (us) | Ponta eixo (W) | Ponta diag (W) | Razao |
+|---|---|---|---|---|---|
+| 5000 | 40 | 15,5 | 26,4 | 24,9 | 1,058 |
+| 10000 | 80 | 31,0 | 38,4 | 33,3 | 1,155 |
+| 15000 | 120 | 46,5 | 53,6 | 40,2 | 1,334 |
+| 20000 | 160 | 62,0 | 70,4 | 47,1 | 1,494 |
+| 25000 | 200 | 77,5 | 88,0 | 52,7 | 1,671 |
+| 30000 | 240 | 93,0 | 104,8 | 58,2 | 1,801 |
+| 35000 | 280 | 108,5 | 121,6 | 65,1 | 1,867 |
+| 40000 | 320 | 124,0 | 139,2 | 72,1 | 1,932 |
+| 45000 | 360 | 139,5 | 155,2 | 80,4 | 1,931 |
+
+**Resultado: dendrita.** Ponta a velocidade constante (~0,42 W/tau0 ~ 23 mm/s), razao eixo/diag 1,93 (acima do octaedro, 1,73). No plano z=0 a meia-largura w(x) cai em degraus regulares a cada ~16 celulas (~13 W ~ 0,28 um): bracos secundarios.
+Arquivos: `\wsl.localhost\Ubuntu\home\ileaohpc\karma\run1\output` (karma_0005000.dat ... karma_0045000.dat).

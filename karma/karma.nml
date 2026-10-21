@@ -1,0 +1,19 @@
+! Parametros do karma3d (modelo quantitativo de Karma, liga Al-Cu isotermica).
+! Comprimentos em W (espessura da interface), tempos em tau0 -- o programa
+! imprime os valores dimensionais (W, tau0, d0, Omega) no inicio do run.
+&karma
+  N        = 200        ! celulas por direcao (1/8 de semente no canto)
+  lambda   = 4.0        ! acoplamento: W/d0 = lambda/0.8839
+  eps4     = 0.02       ! anisotropia cubica (Al ~ 0.01-0.02)
+  dx       = 0.8        ! [W]
+  dt       = 0.008      ! [tau0]
+  R0       = 8.0        ! raio da semente [W]
+  Fnoise   = 0.01       ! ruido na eq. de fase (bracos secundarios)
+  nsteps   = 400000
+  nout     = 5000       ! passos entre arquivos Tecplot
+  tip_stop = 0.9        ! para quando a ponta passa 90% do dominio
+  ! material (mesmos dados do entrada.dat)
+  k = 0.14,  Tm = 933.3,  mliq = 640.0,  C0 = 0.0196
+  TP = 909.5            ! K -> Omega ~ 0.55 (caso classico de Karma 2001)
+  sigma = 0.093,  dH = 0.891002e9,  Dl = 3.0e-9
+/
