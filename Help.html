@@ -112,6 +112,7 @@
     <li><a href="#saidas">Saídas e monitoramento</a></li>
     <li><a href="#desempenho">Desempenho e memória</a></li>
     <li><a href="#solucao-problemas">Solução de problemas</a></li>
+    <li><a href="#karma">Dendritas com o karma3d e imagens</a></li>
   </ol>
 </nav>
 
@@ -465,6 +466,57 @@ cp ~/phasefield/output/*.dat /mnt/c/Users/ileao/Documents/resultados/</code></pr
         <code>bash phasefield_gpu.sh rebuild</code> ou
         <code>parallel_compile.bat</code></td></tr>
   </table>
+</section>
+
+<!-- ================================================================= -->
+<section id="karma">
+  <h2>12. Dendritas com o karma3d e imagens</h2>
+  <div class="box ok"><b>Use o karma3d para dendritas.</b> O solver antigo
+  (<code>source/</code>, modelo WBM) não forma dendritas com os parâmetros reais do
+  Al–Cu: a interface (0,6 µm) é maior que o comprimento de instabilidade (~0,3 µm).
+  O <code>karma/karma3d.f90</code> usa o modelo quantitativo de Karma (2001) /
+  Echebarria et al. (2004), com anti-trapping, e forma dendrita com braços
+  secundários.</div>
+
+  <h3>1. Rodar (WSL <code>Ubuntu</code>, GPU)</h3>
+<pre><code>mkdir -p ~/karma/run_tese &amp;&amp; cd ~/karma/run_tese
+cp /mnt/c/Users/ileao/OneDrive/Documentos/phasefield/karma/{karma3d.f90,karma.nml,karma_gpu.sh,fatia.py} .
+sed -i 's/\r$//' karma_gpu.sh karma.nml      <em># fim de linha LF</em>
+bash karma_gpu.sh build                      <em># compila → karma3d_gpu</em>
+nohup bash karma_gpu.sh run &gt; run.log 2&gt;&amp;1 &amp;   <em># ~30 min; para sozinho</em>
+tail -f run.log                              <em># ponta_eixo, ponta_diag, razao</em></code></pre>
+  <p>O run para quando a ponta chega a 90% do domínio. Gera
+  <code>output/karma_0005000.dat … karma_0045000.dat</code> (~740 MB cada). Uma
+  <b>razão eixo/diag acima de 1,73</b> no log indica braços dendríticos.
+  Parâmetros em <code>karma.nml</code>; o <code>karma.nml</code> do repositório é o do
+  run de referência (Ω = 0,55, ε4 = 0,02, 200³, ver <code>registro_runs.md</code>).
+  Guarde uma cópia do <code>karma.nml</code> junto de cada run da tese.</p>
+
+  <h3>2. Imagem 2D rápida (sem Tecplot)</h3>
+<pre><code>python3 fatia.py output/karma_0045000.dat            <em># plano de simetria z = 0</em>
+python3 fatia.py output/karma_0045000.dat --k 20     <em># outro plano</em></code></pre>
+  <p>Gera <code>output/karma_0045000_k1.png</code>: fase e concentração de Cu lado a
+  lado, já espelhadas para a seção inteira. Exemplo:
+  <code>docs/karma_dendrita_k1.png</code>.</p>
+
+  <h3>3. Imagem 3D no Tecplot</h3>
+  <ol>
+    <li>File → Load Data → Tecplot Data Loader →
+        <code>\\wsl.localhost\Ubuntu\home\ileaohpc\karma\run_tese\output\karma_0045000.dat</code>.</li>
+    <li>Plot → <b>Iso-Surfaces</b>: variável <code>PhaseField</code>, valor
+        <b>0,5</b>. Desligue Zone/Mesh para ver só a superfície.</li>
+    <li><b>Dendrita inteira:</b> o arquivo tem 1/8 (semente no canto). Data → Create
+        Zone → <b>Mirror Zone</b> em X; depois espelhe as duas zonas em Y; depois as
+        quatro em Z (8 zonas).</li>
+    <li>Cor: Contour pela <code>Conc_Solute</code> na iso-superfície (segregação), ou
+        cor sólida com iluminação (Plot → Lighting → Paneled/Gouraud).</li>
+    <li>File → Export → PNG (largura ≥ 2000 px para a tese).</li>
+  </ol>
+  <p><b>Evolução no tempo:</b> carregue vários arquivos (uma zona por tempo) e use
+  Animate → Zones para exportar uma sequência ou vídeo.</p>
+  <p><b>ParaView</b> (alternativa gratuita): abra o <code>.dat</code> com o leitor
+  “Tecplot”, filtro <b>Contour</b> em PhaseField = 0,5 e
+  <b>Reflect</b> em X, Y e Z.</p>
 </section>
 
 </main>
