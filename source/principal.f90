@@ -18,6 +18,7 @@ real(8) :: t_start          ! wall-clock at simulation start
 real(8) :: t_prev_output    ! wall-clock at the previous output event
 integer :: n_outputs        ! how many output events have been written so far
 integer :: it_prev_output   ! iteration index at the previous output event
+integer :: n_sw             ! contador das varreduras da fase no passo
 
 ! ---- separate performance / results log file ------------------------------
 ! Every output event appends its full record (the ESCREVENDO RESULTADOS header,
@@ -98,8 +99,9 @@ Do it=1, it_max
             !!call Calc_Temperature  ! Estava comentada
             !!TNEW = T_
 
-            ! TP (temperatura isotermica do banho) agora e lido do entrada.dat em entrada.f90
-            ! (antes: TP = 919.0d0 fixo aqui). Historico: !T0 - 19.84d0*DELTA_T*IT
+            ! TP: fixo (lido do entrada.dat) ou resfriamento continuo como no codigo 2D,
+            ! TP = T0 - 19.84d0*DELTA_T*IT, com a taxa lida do entrada.dat.
+            if (taxa_resfr > 0.d0) TP = T0 - taxa_resfr*DELTA_T*IT
 
             !========================================================================================
             !DIF_CONC=ABS(C_NEW-C0)
@@ -120,7 +122,34 @@ Do it=1, it_max
             !END IF
 
 
-            call equacao_campo_fase
+            ! O codigo 2D atualiza a fase n_varreduras = 2 vezes por passo (laco Do N=1,2
+            ! em volta da varredura). Entre as varreduras, a fase nova vira a antiga.
+            do n_sw = 1, n_varreduras
+              if (n_sw > 1) then
+                if (use_gpu) then
+                  !$omp target teams distribute parallel do collapse(3) private(i,j,k)
+                  do k=1,nz
+                    do j=1,ny
+                      do i=1,nx
+                        phase_field_old(i,j,k) = phase_field_new(i,j,k)
+                      end do
+                    end do
+                  end do
+                  !$omp end target teams distribute parallel do
+                else
+                  !$omp parallel do collapse(2) default(none) shared(phase_field_old,phase_field_new,nx,ny,nz) private(i,j,k)
+                  do k=1,nz
+                    do j=1,ny
+                      do i=1,nx
+                        phase_field_old(i,j,k) = phase_field_new(i,j,k)
+                      end do
+                    end do
+                  end do
+                  !$omp end parallel do
+                end if
+              end if
+              call equacao_campo_fase
+            end do
 
             call concentracao_soluto
             

@@ -69,6 +69,15 @@ if (ios_tp /= 0) then
     tipo_inicial = 0
     R_semente    = 0.d0
 end if
+! Linha opcional: taxa de resfriamento [K/s] e varreduras da fase por passo,
+! como no codigo 2D (TP = T0 - taxa*t; laco Do N=1,2). Se faltar: TP fixo, 1 varredura.
+read (1,*,iostat=ios_tp) taxa_resfr, n_varreduras
+if (ios_tp /= 0) then
+    taxa_resfr   = 0.d0
+    n_varreduras = 1
+end if
+n_varreduras = max(1, n_varreduras)
+if (taxa_resfr > 0.d0) TP = T0
 
 
 close (unit=1)
@@ -111,6 +120,10 @@ write(*,"('ajuste',F14.3,' -')")ajuste
 write(*,"('stoptime',F14.3,' s')")stoptime
 write(*,"('WriteFileD_timeCounter',I8,' -')")WriteFileD_timeCounter
 write(*,"('TP = ',F14.2,' K  (Cl_eq = ',F10.6,', TL(C0) = ',F10.2,' K)')") TP, (Tm-TP)/Me, Tm-Me*C0
+if (taxa_resfr > 0.d0) then
+    write(*,"('Resfriamento continuo: TP = T0 - ',F8.3,' K/s * t  (T0 = ',F8.2,' K)')") taxa_resfr, T0
+end if
+write(*,"('Varreduras da fase por passo = ',I0)") n_varreduras
 if (tipo_inicial == 3) then
     write(*,"('Condicao inicial: frente plana na base (k<=4), crescimento em +z')")
 else if (tipo_inicial == 2) then
@@ -145,7 +158,8 @@ write(*,"(/,'### Fim Leitura de Entrada de Dados ###',/)")
     !DELTA_T = (DX*DX)/(40.d0*D_LIQ)  !Data Sim 02
     !DELTA_T = (DX*DX)/(50.d0*D_LIQ)  !Data Sim 03
     !DELTA_T = (DX*DX)/(60.d0*D_LIQ)  !Data Sim 03
-    DELTA_T = (DX*DX)/(12.d0*D_LIQ)  ! metade do limite 3D (1/6); 5x mais rapido que /60
+    !DELTA_T = (DX*DX)/(12.d0*D_LIQ)  ! metade do limite 3D (1/6); 5x mais rapido que /60
+    DELTA_T = (DX*DX)/(7.5d0*D_LIQ)  ! equivalente 3D do /5 do codigo 2D (80% do limite)
    
 
 

@@ -29,6 +29,10 @@ real            ::               ran, Ke,time, Sigma, Beta, ajuste,teta_1, ran_1
 real            ::               teta_3,ran_3,ran_0,av,D1,D2,TX
 
 double precision             ::               stoptime
+! taxa_resfr  : resfriamento continuo como no 2D, TP = T0 - taxa_resfr*t [K/s] (0 = TP fixo)
+! n_varreduras: atualizacoes da fase por passo de tempo (o 2D faz 2, laco Do N=1,2)
+double precision             ::               taxa_resfr
+integer                      ::               n_varreduras
 character(len=10) ::             text
 character(len=14) ::             text2
 character(len=38) ::             text3

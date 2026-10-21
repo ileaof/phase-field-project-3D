@@ -152,17 +152,11 @@ AA = AA + Cross_xy + Cross_yz + Cross_zx
 
 g_linha = 2.d0*PP*(1.d0-PP)*(1.d0-PP) - 2.d0*PP*PP*(1.d0-PP)                     !PP*(2-(6*PP)+(4*(PP**2)))
 
-! h(phi) quintico (WBM): h' = 30 phi^2 (1-phi)^2 se anula QUADRATICAMENTE em phi=0,
-! entao o liquido (phi=0) e sempre metaestavel. Com o cubico anterior,
-! h' = 6 phi (1-phi) e o liquido fica linearmente instavel quando
-! 3 (RT/Vm) ln(...) > w0 -- o dominio inteiro solidificava sozinho.
-!h_linha = 2.d0*PP*(3.d0-2.d0*PP)-2.d0*PP*PP   ! anterior (cubico)
-h_linha = 30.d0*PP*PP*(1.d0-PP)*(1.d0-PP)
+h_linha = 2.d0*PP*(3.d0-2.d0*PP)-2.d0*PP*PP  !(3.D0*PP*PP)*(6.D0*PP*PP-15.D0*PP+10.D0) + (PP*PP*PP)*(12.D0*PP-15.D0)    !(PP**2)*(30-(60*PP)+(30*(PP**2)))
 
 CPP  = conc_soluto_old(i,j,k)
 
-!h   = PP*PP*(3.d0-2.d0*PP)                   ! anterior (cubico)
-h   = PP*PP*PP*(10.d0-15.d0*PP+6.d0*PP*PP)
+h   = PP*PP*(3.d0-2.d0*PP)   !PP*PP*PP*(6.d0*PP*PP-15.d0*PP+10.d0)
 
 CLP  = CPP/(Ke*h+(1.d0-h))
 
@@ -178,10 +172,7 @@ GG  = (-w0*g_linha )+ (R*TP/Vm)*h_linha*Log(abs(((1.d0-CS_eq)*(1.d0-CLP))/((1.d0
 
  ran = pseudo_random(i,j,k,it,1)
 
- ! Ruido de MEDIA ZERO: pseudo_random devolve [0,1); com ran direto o ruido era
- ! sempre positivo e agia como forca motriz isotropica extra (crescimento esferico).
- !ruidos= ran*AAA*16.d0*(PP**2)*(1-PP)**2.d0   ! anterior (media positiva)
- ruidos= (2.d0*ran-1.d0)*AAA*16.d0*(PP**2)*(1-PP)**2.d0
+ ruidos= ran*AAA*16.d0*(PP**2)*(1-PP)**2.d0
 
 
 
