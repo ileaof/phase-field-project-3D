@@ -27,7 +27,7 @@ TB= Told(i,j,k-1)
 !=======================================TERMO FONTE======================================
 
 
- h_linha =  2.d0*PP*(3.d0-2.d0*PP)-2.d0*PP*PP        ! (ileao mesmo do fi) estava este --> !(PP**2)*(30-(60*PP)+(30*(PP**2)))
+ h_linha = 30.d0*PP*PP*(1.d0-PP)*(1.d0-PP)           ! (ileao mesmo do fi) quintico; anterior: 2.d0*PP*(3.d0-2.d0*PP)-2.d0*PP*PP
  FONTE   = (delta_H/Cp)*h_linha*DPP(I,J,K)             ! (DELTAH/cp)*(DX*DY/Dtime)*Hlinha*(Phase_Field(I,J)-Phase_Field_Old(I,J))
 
 
