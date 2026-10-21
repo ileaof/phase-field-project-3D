@@ -160,6 +160,11 @@ write(*,"(/,'### Fim Leitura de Entrada de Dados ###',/)")
     !DELTA_T = (DX*DX)/(60.d0*D_LIQ)  !Data Sim 03
     !DELTA_T = (DX*DX)/(12.d0*D_LIQ)  ! metade do limite 3D (1/6); 5x mais rapido que /60
     DELTA_T = (DX*DX)/(7.5d0*D_LIQ)  ! equivalente 3D do /5 do codigo 2D (80% do limite)
+! Ruido escalado com sqrt(dt): somado a cada passo, sem escala ele pesa mais quanto
+! menor o dt e o resultado passa a depender do passo. AAA do entrada.dat fica
+! referido ao dt do codigo 2D, dx^2/(5 D_liq).
+    AAA = AAA*sqrt(DELTA_T/((DX*DX)/(5.d0*D_LIQ)))
+    write(*,"('AAA efetivo (escalado com sqrt(dt)) = ',F10.5)") AAA
    
 
 

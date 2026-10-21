@@ -20,7 +20,7 @@
 1.d-23               | valor pequeno - small|
 4.d0                 | numero de pontas - ANI|
 1000000000            | numero de itera��o maxima - it_max|
-0.02d0  0.03d0  0.01d0  0.03d0     | amplitude do ruido -AAA|
+0.01d0  0.02d0  0.03d0  0.01d0  0.03d0     | amplitude do ruido -AAA|
 0.00d+00  0.d0       | direcao preferencial de crescimento em radianos - Teta_0|
 0.03d0   0.06d0   0.03d0     | forca de anisotropia - DELTA_EPSLON|
 1.5d-07 1.5d-06     1.67d-06             | passo no tempo- DELTA_T|
