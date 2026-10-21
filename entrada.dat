@@ -11,9 +11,9 @@
 3.23646776d-05   | difusividade termica do liquido D_l - m2/s | ileao_2004
 2.926560e+06  |2.9025d+06    5.36d+06 | calor especifico Cps - J/m3 K |
 2.626320e+06  |2.9025d+06    5.36d+06 | calor especifico Cpl - J/m3 K |
-192   160  200    50     6    300 1200                  | numero de pontos em x - Nx|
-192   160  400   450  150   200 800                   | numero de pontos em y - Ny|   
-192   160  200   900   500                             | numero de pontos em z - Nz| 
+200   192   160  200    50     6    300 1200                  | numero de pontos em x - Nx|
+200   192   160  400   450  150   200 800                   | numero de pontos em y - Ny|   
+400   192   160  200   900   500                             | numero de pontos em z - Nz| 
 1.5d-07  2.5d-07     9.0d-07   1.0d-07   0.5d-06   5.0d-07                | largura da malha em y - dy|.d
 1.5d-07  2.5d-07     9.0d-07   1.0d-07   0.5d-06   5.0d-07	              | largura da malha em x - dx|
 1.5d-07                                                                   | largura da malha em z - dz|
@@ -38,7 +38,7 @@
 0.5d0 0.02250300d0  24.0d-06   0.105d0             | tempo de parada em s - stoptime
 1000   5000                                        | Numeros de D_time para escrever arquivo de saida
 905.0d0   910.0d0   915.0d0   919.0d0                                     | temperatura isotermica do banho TP - K (fase e soluto)
-2   8.d0      1   8.d0   0   0.d0                      | condicao inicial: 0=frente plana (j<=4), 1=semente esferica central, 2=1/8 de semente no canto ; raio da semente em celulas
+3   0.d0      2   8.d0   1   8.d0   0   0.d0                      | condicao inicial: 0=frente plana (j<=4), 1=semente esferica central, 2=1/8 de semente no canto, 3=frente plana na base (k<=4) crescendo em +z ; raio da semente em celulas
 
 
 

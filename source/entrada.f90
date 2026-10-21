@@ -7,6 +7,8 @@ double precision :: Teta0_inic
 integer :: ios_tp
 ! Condicao inicial: tipo_inicial = 0 -> frente plana em j<=4 (original);
 !                   tipo_inicial = 1 -> semente esferica no centro do dominio
+!                   tipo_inicial = 2 -> 1/8 de semente no canto
+!                   tipo_inicial = 3 -> frente plana na base (k<=4), crescimento em +z
 integer :: tipo_inicial, ic, jc, kc
 double precision :: R_semente, dist2
 
@@ -109,7 +111,9 @@ write(*,"('ajuste',F14.3,' -')")ajuste
 write(*,"('stoptime',F14.3,' s')")stoptime
 write(*,"('WriteFileD_timeCounter',I8,' -')")WriteFileD_timeCounter
 write(*,"('TP = ',F14.2,' K  (Cl_eq = ',F10.6,', TL(C0) = ',F10.2,' K)')") TP, (Tm-TP)/Me, Tm-Me*C0
-if (tipo_inicial == 2) then
+if (tipo_inicial == 3) then
+    write(*,"('Condicao inicial: frente plana na base (k<=4), crescimento em +z')")
+else if (tipo_inicial == 2) then
     write(*,"('Condicao inicial: 1/8 de semente no canto (3,3,3), raio = ',F6.1,' celulas')") R_semente
 else if (tipo_inicial == 1) then
     write(*,"('Condicao inicial: semente esferica central, raio = ',F6.1,' celulas')") R_semente
@@ -195,12 +199,13 @@ end if
 do k=1,Nz
   do j=1,Ny
     do i=1,Nx
-      if (tipo_inicial >= 1) then
+      if (tipo_inicial == 1 .or. tipo_inicial == 2) then
         dist2 = dble(i-ic)**2 + dble(j-jc)**2 + dble(k-kc)**2
       else
         dist2 = huge(1.d0)
       end if
-      if ((tipo_inicial == 0 .and. j<=4) .or. dist2 <= R_semente**2) then
+      if ((tipo_inicial == 0 .and. j<=4) .or. (tipo_inicial == 3 .and. k<=4) &
+          .or. dist2 <= R_semente**2) then
         phase_field_old(i,j,k) = 1.d0
         conc_soluto_old(i,j,k) = Ke*C0
       else
