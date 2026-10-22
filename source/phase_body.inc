@@ -176,7 +176,8 @@ GG  = (-w0*g_linha )+ (R*TP/Vm)*h_linha*Log(abs(((1.d0-CS_eq)*(1.d0-CLP))/((1.d0
 
 !========================================Geracao de ruidos===========================================
 
- ran = pseudo_random(i,j,k,it,1)
+ !ran = pseudo_random(i,j,k,it,1)   ! anterior: ruido celula a celula (enruga a interface)
+ ran = ruido_suave(i,j,k,it)
 
  ! Ruido de MEDIA ZERO: pseudo_random devolve [0,1); com ran direto o ruido era
  ! sempre positivo e agia como forca motriz isotropica extra (crescimento esferico).

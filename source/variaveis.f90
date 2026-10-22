@@ -50,6 +50,11 @@ logical :: use_gpu = .false.
 ! function -- no I/O, no module state, no host-only intrinsics -- so it is safe and
 ! reproducible on the accelerator, and race-free when evaluated concurrently.
 !$omp declare target(pseudo_random)
+!$omp declare target(ruido_suave)
+
+! Ruido suave da equacao de fase: sorteado a cada LR_RUIDO celulas e renovado a
+! cada TR_RUIDO passos (ver ruido_suave). Testado no 2D (casos N/O).
+integer, parameter :: LR_RUIDO = 6, TR_RUIDO = 20
 
 contains
 
@@ -80,6 +85,25 @@ hval = ieor(hval, ishft(hval,-33))
 ran = real(iand(hval, MASK63), 8) / real(MASK63, 8)
 
 end function pseudo_random
+
+! Ruido espacialmente suave em [0,1): valores de pseudo_random numa grade grossa
+! (passo LR_RUIDO celulas), renovados a cada TR_RUIDO passos e interpolados
+! trilinearmente. O ruido celula a celula enruga a interface na escala da malha;
+! este perturba na escala dos bracos secundarios (~1 um) e deixa a superficie lisa.
+pure function ruido_suave(i,j,k,it) result(r)
+implicit none
+integer, intent(in) :: i,j,k,it
+double precision :: r, fx, fy, fz
+integer :: i0, j0, k0, tb
+i0 = i/LR_RUIDO ; j0 = j/LR_RUIDO ; k0 = k/LR_RUIDO ; tb = it/TR_RUIDO
+fx = dble(mod(i,LR_RUIDO))/dble(LR_RUIDO)
+fy = dble(mod(j,LR_RUIDO))/dble(LR_RUIDO)
+fz = dble(mod(k,LR_RUIDO))/dble(LR_RUIDO)
+r = (1.d0-fz)*( (1.d0-fy)*((1.d0-fx)*pseudo_random(i0,  j0,  k0,  tb,3) + fx*pseudo_random(i0+1,j0,  k0,  tb,3)) &
+              +       fy *((1.d0-fx)*pseudo_random(i0,  j0+1,k0,  tb,3) + fx*pseudo_random(i0+1,j0+1,k0,  tb,3)) ) &
+  +       fz *( (1.d0-fy)*((1.d0-fx)*pseudo_random(i0,  j0,  k0+1,tb,3) + fx*pseudo_random(i0+1,j0,  k0+1,tb,3)) &
+              +       fy *((1.d0-fx)*pseudo_random(i0,  j0+1,k0+1,tb,3) + fx*pseudo_random(i0+1,j0+1,k0+1,tb,3)) )
+end function ruido_suave
 
 end module variaveis
 
