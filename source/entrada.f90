@@ -9,6 +9,7 @@ integer :: ios_tp
 !                   tipo_inicial = 1 -> semente esferica no centro do dominio
 !                   tipo_inicial = 2 -> 1/8 de semente no canto
 !                   tipo_inicial = 3 -> frente plana na base (k<=4), crescimento em +z
+!                   tipo_inicial = 4 -> continua de restart.dat (arquivo de saida)
 integer :: tipo_inicial, ic, jc, kc
 double precision :: R_semente, dist2
 
@@ -124,7 +125,9 @@ if (taxa_resfr > 0.d0) then
     write(*,"('Resfriamento continuo: TP = T0 - ',F8.3,' K/s * t  (T0 = ',F8.2,' K)')") taxa_resfr, T0
 end if
 write(*,"('Varreduras da fase por passo = ',I0)") n_varreduras
-if (tipo_inicial == 3) then
+if (tipo_inicial == 4) then
+    write(*,"('Condicao inicial: continuacao a partir de restart.dat')")
+else if (tipo_inicial == 3) then
     write(*,"('Condicao inicial: frente plana na base (k<=4), crescimento em +z')")
 else if (tipo_inicial == 2) then
     write(*,"('Condicao inicial: 1/8 de semente no canto (3,3,3), raio = ',F6.1,' celulas')") R_semente
@@ -250,12 +253,40 @@ end do
 !conc_soluto_old(0.40*nx,0.40*ny,0.40*nz)=Ke*C0
 
 
+! tipo_inicial = 4: continua um run a partir de um arquivo de saida (Tecplot
+! POINT, mesma malha), copiado para 'restart.dat' na pasta do run.
+if (tipo_inicial == 4) call ler_restart
+
 TX = 10
 !==================================================================================
 
 
 !==================================================================================
 
+contains
+
+subroutine ler_restart
+integer :: iu_r, ios_r, ii, jj, kk
+double precision :: xr, yr, zr, phir, tr, cr
+open(newunit=iu_r, file='restart.dat', status='old', action='read', iostat=ios_r)
+if (ios_r /= 0) stop 'tipo_inicial = 4: restart.dat nao encontrado'
+do ii = 1, 4
+  read(iu_r,*)
+end do
+do kk = 1, Nz
+  do jj = 1, Ny
+    do ii = 1, Nx
+      read(iu_r,*,iostat=ios_r) xr, yr, zr, phir, tr, cr
+      if (ios_r /= 0) stop 'tipo_inicial = 4: restart.dat menor que a malha'
+      phase_field_old(ii,jj,kk) = phir
+      conc_soluto_old(ii,jj,kk) = cr
+      conc_soluto_new(ii,jj,kk) = cr
+    end do
+  end do
+end do
+close(iu_r)
+write(*,"('Condicao inicial: restart.dat lido (',I0,' x ',I0,' x ',I0,')')") Nx, Ny, Nz
+end subroutine ler_restart
 
 end subroutine entrada
 

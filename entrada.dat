@@ -35,10 +35,10 @@
 0.093d+0              | Sigma - J /m2
 1    2.5D0     2.5d0   10.d0   1.0d0                | Beta 
 2.d0   1.d0                 | ajuste
-0.08d0  0.05d0  0.03d0  0.15d0  0.5d0 0.02250300d0  24.0d-06   0.105d0             | tempo de parada em s - stoptime
+0.045d0  0.08d0  0.05d0  0.03d0  0.15d0  0.5d0 0.02250300d0  24.0d-06   0.105d0             | tempo de parada em s - stoptime
 5000   10000  1000   5000                                        | Numeros de D_time para escrever arquivo de saida
 905.0d0   910.0d0   915.0d0   919.0d0                                     | temperatura isotermica do banho TP - K (fase e soluto)
-3   0.d0      2   8.d0   1   8.d0   0   0.d0                      | condicao inicial: 0=frente plana (j<=4), 1=semente esferica central, 2=1/8 de semente no canto, 3=frente plana na base (k<=4) crescendo em +z ; raio da semente em celulas
+4   0.d0      3   0.d0      2   8.d0   1   8.d0   0   0.d0                      | condicao inicial: 0=frente plana (j<=4), 1=semente esferica central, 2=1/8 de semente no canto, 3=frente plana na base (k<=4) crescendo em +z, 4=continua de restart.dat ; raio da semente em celulas
 0.d0  2     19.84d0  2        0.d0  1                         | taxa de resfriamento K/s (TP = T0 - taxa*t, como no 2D; 0 = TP fixo) ; varreduras da fase por passo (2D = 2)
 
 
