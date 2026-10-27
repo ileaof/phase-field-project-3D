@@ -108,3 +108,22 @@ TP = 909,5 K -> Omega = 0,55; d0 = 4,76 nm, W = 21,5 nm, tau0 = 0,39 us; dominio
 
 **Resultado: dendrita.** Ponta a velocidade constante (~0,42 W/tau0 ~ 23 mm/s), razao eixo/diag 1,93 (acima do octaedro, 1,73). No plano z=0 a meia-largura w(x) cai em degraus regulares a cada ~16 celulas (~13 W ~ 0,28 um): bracos secundarios.
 Arquivos: `\wsl.localhost\Ubuntu\home\ileaohpc\karma\run1\output` (karma_0005000.dat ... karma_0045000.dat).
+
+## run4_ruido_suave (modelo WBM 3D do usuario, `source/`)
+
+Frente plana na base crescendo em +z, 160x160x800 (24x24x120 um), dx = 1,5e-7 m, TP = 905 K fixo,
+h(phi) quintico, duas varreduras da fase por passo, dt = dx^2/(7,5 D), DELTA_EPSLON = 0,03, ajuste = 2.
+**Ruido suave** (`ruido_suave` em `variaveis.f90`): sorteado a cada 6 celulas, renovado a cada
+20 passos, interpolado trilinearmente; AAA = 0,001 (efetivo 0,0008 com a escala sqrt(dt)).
+Rodou ate 35 ms, parou, e continuou de `restart.dat` (`tipo_inicial = 4`) ate 80 ms.
+
+| t (ms) | Figura | Observacao |
+|---|---|---|
+| 35 | `docs/run4_ruido_suave/fase_35ms.png` | superficie lisa; flancos com ondulacoes de ~1 um |
+| 60 | `docs/run4_ruido_suave/fase_60ms.png` | 4 troncos colunares, pontas livres (~90 um); melhor retrato |
+| 80 | `docs/run4_ruido_suave/fase_80ms.png`, `Cu_80ms.png` | pontas encostam no topo (120 um) e achatam: artefato de parede |
+
+**Resultado:** superficie lisa (o ruido celula a celula enrugava; o suave nao) e inicio de bracos
+secundarios nos flancos, mas sem bracos destacados: com 24 um de largura so sobram 4 troncos, que
+engrossam ate se encostarem. Referencia 2D com o mesmo ruido: `docs/run4_ruido_suave/caso2D_O_Cu.png`.
+Proximo passo: dominio mais largo e mais alto (run5, 300x300x960).
