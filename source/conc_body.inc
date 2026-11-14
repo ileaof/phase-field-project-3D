@@ -38,20 +38,24 @@ CPT = conc_soluto_old(i,j,k+1)
 CPB = conc_soluto_old(i,j,k-1)
 
 
-! h(phi) quintico, o mesmo da equacao de fase (phase_body.inc). Anterior: h = PP*PP*(3-2*PP)
-  h = (PP**3)*(10.d0-(15.d0*PP)+(6.d0*(PP**2)))
-
-h_E = (PE**3)*(10.d0-(15.d0*PE)+(6.d0*(PE**2)))
-
-h_W = (PW**3)*(10.d0-(15.d0*PW)+(6.d0*(PW**2)))
-
-h_N = (PN**3)*(10.d0-(15.d0*PN)+(6.d0*(PN**2)))
-
-h_S = (PS**3)*(10.d0-(15.d0*PS)+(6.d0*(PS**2)))
-
-h_T = (PT**3)*(10.d0-(15.d0*PT)+(6.d0*(PT**2)))
-
-h_B = (PB**3)*(10.d0-(15.d0*PB)+(6.d0*(PB**2)))
+! h(phi), o mesmo da equacao de fase (phase_body.inc): quintico ou cubico (2D original).
+if (h_quintico == 1) then
+  h   = (PP**3)*(10.d0-(15.d0*PP)+(6.d0*(PP**2)))
+  h_E = (PE**3)*(10.d0-(15.d0*PE)+(6.d0*(PE**2)))
+  h_W = (PW**3)*(10.d0-(15.d0*PW)+(6.d0*(PW**2)))
+  h_N = (PN**3)*(10.d0-(15.d0*PN)+(6.d0*(PN**2)))
+  h_S = (PS**3)*(10.d0-(15.d0*PS)+(6.d0*(PS**2)))
+  h_T = (PT**3)*(10.d0-(15.d0*PT)+(6.d0*(PT**2)))
+  h_B = (PB**3)*(10.d0-(15.d0*PB)+(6.d0*(PB**2)))
+else
+  h   = PP*PP*(3.d0-2.D0*PP)
+  h_E = PE*PE*(3.d0-2.D0*PE)
+  h_W = PW*PW*(3.d0-2.D0*PW)
+  h_N = PN*PN*(3.d0-2.D0*PN)
+  h_S = PS*PS*(3.d0-2.D0*PS)
+  h_T = PT*PT*(3.d0-2.D0*PT)
+  h_B = PB*PB*(3.d0-2.D0*PB)
+end if
 
 
 CSP = (Ke*CPP)/((Ke*h)+(1.d0-h))

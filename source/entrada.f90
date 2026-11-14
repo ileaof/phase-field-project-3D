@@ -79,6 +79,14 @@ if (ios_tp /= 0) then
 end if
 n_varreduras = max(1, n_varreduras)
 if (taxa_resfr > 0.d0) TP = T0
+! Linha opcional: h(phi) (1 = quintico, 0 = cubico do 2D original) e tipo de ruido
+! (0 = celula a celula com media positiva, como no 2D original; 1 = celula a celula
+! com media zero; 2 = suave com media zero). Se faltar: quintico e ruido suave.
+read (1,*,iostat=ios_tp) h_quintico, ruido_tipo
+if (ios_tp /= 0) then
+    h_quintico = 1
+    ruido_tipo = 2
+end if
 
 
 close (unit=1)
@@ -166,8 +174,16 @@ write(*,"(/,'### Fim Leitura de Entrada de Dados ###',/)")
 ! Ruido escalado com sqrt(dt): somado a cada passo, sem escala ele pesa mais quanto
 ! menor o dt e o resultado passa a depender do passo. AAA do entrada.dat fica
 ! referido ao dt do codigo 2D, dx^2/(5 D_liq).
-    AAA = AAA*sqrt(DELTA_T/((DX*DX)/(5.d0*D_LIQ)))
-    write(*,"('AAA efetivo (escalado com sqrt(dt)) = ',F10.5)") AAA
+! O ruido de media positiva (ruido_tipo = 0) age como forca motriz media: escala
+! com dt (linear), para dar o mesmo empurrao por segundo simulado que no 2D.
+    if (ruido_tipo == 0) then
+        AAA = AAA*(DELTA_T/((DX*DX)/(5.d0*D_LIQ)))
+        write(*,"('AAA efetivo (escalado com dt) = ',F10.5)") AAA
+    else
+        AAA = AAA*sqrt(DELTA_T/((DX*DX)/(5.d0*D_LIQ)))
+        write(*,"('AAA efetivo (escalado com sqrt(dt)) = ',F10.5)") AAA
+    end if
+    write(*,"('h(phi) quintico = ',I0,'   tipo de ruido = ',I0)") h_quintico, ruido_tipo
    
 
 

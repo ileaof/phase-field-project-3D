@@ -152,17 +152,17 @@ AA = AA + Cross_xy + Cross_yz + Cross_zx
 
 g_linha = 2.d0*PP*(1.d0-PP)*(1.d0-PP) - 2.d0*PP*PP*(1.d0-PP)                     !PP*(2-(6*PP)+(4*(PP**2)))
 
-! h(phi) quintico (WBM): h' = 30 phi^2 (1-phi)^2 se anula QUADRATICAMENTE em phi=0,
-! entao o liquido (phi=0) e sempre metaestavel. Com o cubico anterior,
-! h' = 6 phi (1-phi) e o liquido fica linearmente instavel quando
-! 3 (RT/Vm) ln(...) > w0 -- o dominio inteiro solidificava sozinho.
-!h_linha = 2.d0*PP*(3.d0-2.d0*PP)-2.d0*PP*PP   ! anterior (cubico)
-h_linha = 30.d0*PP*PP*(1.d0-PP)*(1.d0-PP)
-
+! h(phi): quintico (WBM, h' = 30 phi^2 (1-phi)^2, liquido metaestavel) ou cubico
+! (codigo 2D original, h' = 6 phi (1-phi)), conforme h_quintico no entrada.dat.
 CPP  = conc_soluto_old(i,j,k)
 
-!h   = PP*PP*(3.d0-2.d0*PP)                   ! anterior (cubico)
-h   = PP*PP*PP*(10.d0-15.d0*PP+6.d0*PP*PP)
+if (h_quintico == 1) then
+  h_linha = 30.d0*PP*PP*(1.d0-PP)*(1.d0-PP)
+  h       = PP*PP*PP*(10.d0-15.d0*PP+6.d0*PP*PP)
+else
+  h_linha = 2.d0*PP*(3.d0-2.d0*PP)-2.d0*PP*PP
+  h       = PP*PP*(3.d0-2.d0*PP)
+end if
 
 CLP  = CPP/(Ke*h+(1.d0-h))
 
@@ -176,13 +176,18 @@ GG  = (-w0*g_linha )+ (R*TP/Vm)*h_linha*Log(abs(((1.d0-CS_eq)*(1.d0-CLP))/((1.d0
 
 !========================================Geracao de ruidos===========================================
 
- !ran = pseudo_random(i,j,k,it,1)   ! anterior: ruido celula a celula (enruga a interface)
- ran = ruido_suave(i,j,k,it)
-
- ! Ruido de MEDIA ZERO: pseudo_random devolve [0,1); com ran direto o ruido era
- ! sempre positivo e agia como forca motriz isotropica extra (crescimento esferico).
- !ruidos= ran*AAA*16.d0*(PP**2)*(1-PP)**2.d0   ! anterior (media positiva)
- ruidos= (2.d0*ran-1.d0)*AAA*16.d0*(PP**2)*(1-PP)**2.d0
+ ! ruido_tipo 0: celula a celula, media positiva (codigo 2D original);
+ !            1: celula a celula, media zero; 2: suave (ruido_suave), media zero.
+ if (ruido_tipo == 2) then
+   ran = ruido_suave(i,j,k,it)
+ else
+   ran = pseudo_random(i,j,k,it,1)
+ end if
+ if (ruido_tipo == 0) then
+   ruidos= ran*AAA*16.d0*(PP**2)*(1-PP)**2.d0
+ else
+   ruidos= (2.d0*ran-1.d0)*AAA*16.d0*(PP**2)*(1-PP)**2.d0
+ end if
 
 
 

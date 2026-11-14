@@ -91,6 +91,7 @@ conc_soluto_new = conc_soluto_old
 !$omp parallel default(none) &
 !$omp shared(phase_field_old,conc_soluto_old,conc_soluto_new) &
 !$omp shared(nx,ny,nz,DELTA_T,InvDX,InvDY,InvDZ,Ke,AAA,D_liq,D_sol,it) &
+!$omp shared(h_quintico) &
 !$omp private(i,j,k) &
 !$omp private(PP,PN,PS,PW,PE,PT,PB) &
 !$omp private(CPP,CPS,CPN,CPW,CPE,CPT,CPB) &

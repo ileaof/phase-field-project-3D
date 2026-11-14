@@ -120,6 +120,7 @@ else
 !$omp parallel default(none) &
 !$omp shared(phase_field_old,phase_field_new,conc_soluto_old,DPP) &
 !$omp shared(nx,ny,nz,dx,dy,dz,E0,DELTA_EPSLON,DELTA_T,M0,w0,Tm,Me,Vm,R,Ke,AAA,TP,it) &
+!$omp shared(h_quintico,ruido_tipo) &
 !$omp shared(Cs_eq,Cl_eq) &
 !$omp private(i,j,k) &
 !$omp private(PP,PN,PS,PE,PW,PT,PB) &

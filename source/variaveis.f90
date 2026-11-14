@@ -33,6 +33,11 @@ double precision             ::               stoptime
 ! n_varreduras: atualizacoes da fase por passo de tempo (o 2D faz 2, laco Do N=1,2)
 double precision             ::               taxa_resfr
 integer                      ::               n_varreduras
+! h_quintico: 1 = h(phi) quintico (WBM), 0 = cubico (codigo 2D original)
+! ruido_tipo: 0 = celula a celula, media positiva (codigo 2D original)
+!             1 = celula a celula, media zero
+!             2 = suave (grade grossa interpolada), media zero
+integer                      ::               h_quintico, ruido_tipo
 character(len=10) ::             text
 character(len=14) ::             text2
 character(len=38) ::             text3

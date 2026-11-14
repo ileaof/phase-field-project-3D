@@ -56,6 +56,7 @@ TNEW=TOLD
 
 !$omp parallel default(none) &
 !$omp shared(Told,TNEW,phase_field_old,DPP,nx,ny,nz,dx,dy,dz,D,DELTA_T,delta_H,cp,TP) &
+!$omp shared(h_quintico) &
 !$omp private(i,j,k,TE,TW,TN,TS,TT,TB,PP,h_linha,FONTE,TNEW1)
 !$omp do collapse(2) schedule(static)
 DO K=2,NZ-1
