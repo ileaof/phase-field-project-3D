@@ -282,8 +282,15 @@ TX = 10
 contains
 
 subroutine ler_restart
-integer :: iu_r, ios_r, ii, jj, kk
+! Deslocamento (referencial movel): com tipo_inicial = 4, o segundo valor da linha
+! (R_semente) e o numero de camadas k_desl descartadas na base. A camada kk do
+! arquivo vai para kk-k_desl; as k_desl camadas do topo recebem liquido (phi = 0)
+! com a concentracao da ultima camada do arquivo. Isoterma uniforme (sem gradiente),
+! entao deslocar o dominio nao muda a fisica; so a origem de z muda.
+integer :: iu_r, ios_r, ii, jj, kk, k_desl, kn
 double precision :: xr, yr, zr, phir, tr, cr
+k_desl = max(0, nint(R_semente))
+if (k_desl >= Nz) stop 'tipo_inicial = 4: deslocamento >= Nz'
 open(newunit=iu_r, file='restart.dat', status='old', action='read', iostat=ios_r)
 if (ios_r /= 0) stop 'tipo_inicial = 4: restart.dat nao encontrado'
 do ii = 1, 4
@@ -294,14 +301,23 @@ do kk = 1, Nz
     do ii = 1, Nx
       read(iu_r,*,iostat=ios_r) xr, yr, zr, phir, tr, cr
       if (ios_r /= 0) stop 'tipo_inicial = 4: restart.dat menor que a malha'
-      phase_field_old(ii,jj,kk) = phir
-      conc_soluto_old(ii,jj,kk) = cr
-      conc_soluto_new(ii,jj,kk) = cr
+      kn = kk - k_desl
+      if (kn >= 1) then
+        phase_field_old(ii,jj,kn) = phir
+        conc_soluto_old(ii,jj,kn) = cr
+        conc_soluto_new(ii,jj,kn) = cr
+      end if
+      if (kk == Nz .and. k_desl > 0) then
+        phase_field_old(ii,jj,Nz-k_desl+1:Nz) = 0.d0
+        conc_soluto_old(ii,jj,Nz-k_desl+1:Nz) = cr
+        conc_soluto_new(ii,jj,Nz-k_desl+1:Nz) = cr
+      end if
     end do
   end do
 end do
 close(iu_r)
-write(*,"('Condicao inicial: restart.dat lido (',I0,' x ',I0,' x ',I0,')')") Nx, Ny, Nz
+write(*,"('Condicao inicial: restart.dat lido (',I0,' x ',I0,' x ',I0,'), deslocamento = ',I0,' camadas')") &
+      Nx, Ny, Nz, k_desl
 end subroutine ler_restart
 
 end subroutine entrada

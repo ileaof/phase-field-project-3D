@@ -127,3 +127,18 @@ Rodou ate 35 ms, parou, e continuou de `restart.dat` (`tipo_inicial = 4`) ate 80
 secundarios nos flancos, mas sem bracos destacados: com 24 um de largura so sobram 4 troncos, que
 engrossam ate se encostarem. Referencia 2D com o mesmo ruido: `docs/run4_ruido_suave/caso2D_O_Cu.png`.
 Proximo passo: dominio mais largo e mais alto (run5, 300x300x960).
+
+## run6 / run6b / run6c (modelo WBM 3D com os valores default do 2D)
+
+340x340x700 (51x51x105 um), T0 = 922 K, 19,84 K/s, AAA = 0,03, h cubico, ruido positivo celula a celula
+(linha 43 do entrada.dat = `0 0`). Detalhes, entrada.dat de cada etapa e figuras em `docs/run6/`.
+
+| t real (ms) | Ponta (um) | Observacao |
+|---|---|---|
+| 7,5 - 30 | 7, 14, 26, 43 | celulas lisas -> colunas em ogiva |
+| 45 | 80 | ondulacoes de bracos secundarios |
+| 52,5 | 99 | bracos nitidos; pontas no topo -> continuacao com deslocamento de 450 camadas (run6b) |
+| 60 / 67,5 / 75 | 118 / 138 / 158 | bracos em degraus; aos 75 ms novo deslocamento de 300 camadas (run6c, ate 85 ms) |
+
+**Resultado: dendritas colunares com bracos secundarios e superficie lisa**, ~1,8x mais rapidas que no 2D.
+Arquivos no WSL: `~/pf3d_default/output`, `~/pf3d_default_b/output`, `~/pf3d_default_c/output`.
