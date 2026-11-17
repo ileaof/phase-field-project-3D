@@ -84,6 +84,10 @@ flowchart TD
 | `entrada.dat` | Arquivo de configuração (parâmetros físicos, malha, tempo) |
 | `phasefield_gpu.sh` | Build + execução na GPU NVIDIA via `nvfortran` (WSL2) |
 | `compile_gpu.bat` / `compile.bat` | Builds Windows (Intel `ifx`, GPU Intel / CPU) |
+| `tecplot/` | Macros do Tecplot que geram as figuras 3D (fase vermelho/azul e Cu) |
+| `docs/run6/` | Dendritas colunares 3D com os valores default do 2D: `entrada.dat` de cada etapa, figuras, roteiro para repetir |
+| `casos2D/` | Código 2D original (referência) |
+| `registro_runs.md` | Registro de todos os runs e resultados |
 
 ---
 
@@ -147,6 +151,27 @@ Cada linha traz o valor lido seguido de um comentário. Parâmetros principais:
 - `DELTA_EPSLON` (força da anisotropia), coeficiente de partição `Ke`, `C0`
 - `stoptime` (tempo físico de parada)
 - `WriteFileD_timeCounter` (**intervalo de escrita**, em nº de passos)
+- Linha 41 — condição inicial `tipo_inicial  R_semente`:
+  `3` = frente plana na base crescendo em +z; `4` = continuação a partir de `restart.dat`
+  (veja abaixo)
+- Linha 43 — `h_quintico  ruido_tipo`: `0 0` = h(φ) cúbico e ruído positivo célula a
+  célula, iguais ao código 2D original (configuração que gera as dendritas do `docs/run6`)
+
+Convenção: o valor lido é o **primeiro** da linha; os valores anteriores ficam ao lado
+como histórico. O original fica em `entrada.dat.backup`.
+
+### Continuar um run (`tipo_inicial = 4`) e referencial móvel
+
+1. Copie um arquivo de saída para `restart.dat` na pasta do run (pode ser um link simbólico).
+2. Na linha 41 use `4  K`, onde `K` é o número de camadas descartadas na base.
+   O domínio "sobe" `K·dz`; as `K` camadas do topo são preenchidas com líquido na
+   concentração do último plano. Com `K = 0` é uma continuação simples.
+3. Ajuste `T0` (linha 5) para a temperatura no instante da retomada,
+   `T0 = T0_original − taxa · t`, e `stoptime` (linha 38) para o tempo que falta.
+
+O contador de passos volta a 1 na retomada. Tempo real = instante da retomada + t;
+z real = z + soma dos deslocamentos. O ruído é determinístico (`pseudo_random(i,j,k,it)`),
+então os mesmos fontes, `entrada.dat` e pontos de retomada reproduzem o mesmo resultado.
 
 ---
 
@@ -176,6 +201,48 @@ Completed              : 0.02 %
 Estimated Remaining    : 2727151.0 s
 --------------------------------------------------------
 ```
+
+---
+
+## 📊 Figuras 3D no Tecplot
+
+As figuras de `docs/run6/` são geradas pelas macros de [`tecplot/`](tecplot/)
+(Tecplot 360 EX 2017 R2), em modo batch:
+
+| Macro | Figura |
+|---|---|
+| `tecplot/dendrita_wbm_fase.mcr` | Sólido **vermelho** (iso-superfície φ = 0,5) e paredes x = 0, y = 0 coloridas pelo PhaseField (**azul** = líquido) |
+| `tecplot/dendrita_wbm.mcr` | Mesma iso-superfície colorida pela concentração de Cu |
+
+**Como a figura vermelho/azul é montada** (`dendrita_wbm_fase.mcr`):
+
+1. Lê o arquivo em `Cartesian3D` (variável 4 = PhaseField, 6 = Conc_Solute).
+2. **Sólido vermelho**: iso-superfície em PhaseField = 0,5 (a interface), pintada com cor
+   sólida e não pelo contorno, com iluminação Gouraud, que dá o relevo dos braços:
+   ```
+   $!IsoSurfaceAttributes 1  Isovalue1 = 0.5
+   $!IsoSurfaceAttributes 1  Contour { Show = No }
+   $!IsoSurfaceAttributes 1  Shade { Show = Yes  Color = Red  UseLightingEffect = Yes }
+   $!IsoSurfaceAttributes 1  Effects { LightingEffect = Gouraud }
+   ```
+3. **Paredes azuis**: dois *slices* em x = 0 e y = 0 com *flood* do PhaseField de 0 a 1
+   (21 níveis): líquido azul, sólido vermelho; a faixa azul-clara perto das pontas é a
+   camada difusa da interface.
+4. Vista PSI = 65°, Theta = 215°, `View Fit`, exporta PNG de 2000 px.
+
+**Uso:**
+
+1. O Tecplot do Windows não lê o WSL: copie o arquivo de saída para uma pasta do Windows,
+   por exemplo `cp ~/run/output/saida_*7501_* /mnt/c/pf_resultados/saida_wbm.dat`.
+2. Ajuste `|ARQ|` (arquivo de entrada) e `|PNG|` (imagem) no topo da macro.
+3. Rode:
+   ```bat
+   "C:\Program Files\Tecplot\Tecplot 360 EX 2017 R2\bin\tec360.exe" -b -p tecplot\dendrita_wbm_fase.mcr
+   "C:\Program Files\Tecplot\Tecplot 360 EX 2017 R2\bin\tec360.exe" -b -p tecplot\dendrita_wbm.mcr
+   ```
+   ou pela interface: *Scripting → Play Macro/Script*.
+
+Para a malha 340×340×700 cada arquivo tem ~7,8 GB em texto e cada figura leva ~40 min.
 
 ---
 

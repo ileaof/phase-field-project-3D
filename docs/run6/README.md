@@ -23,6 +23,30 @@ Em cada continuacao: T0 = 922 - 19,84 * (tempo real em s) e stoptime = 85 ms - t
 Na retomada o contador de passos volta a 1 (e com ele a sequencia do ruido); para resultados
 identicos, retome nos mesmos pontos.
 
+Passo a passo (WSL, GPU NVIDIA):
+
+```bash
+cp -r <repo> ~/phasefield && cd ~/phasefield && bash phasefield_gpu.sh build
+mkdir -p ~/run6/output && cd ~/run6
+cp ~/phasefield/phasefield3d_gpu_wsl ~/phasefield/phasefield_gpu.sh .
+cp ~/phasefield/docs/run6/entrada_run6.dat entrada.dat
+bash phasefield_gpu.sh run      # 0 -> 52,47 ms (~2 dias na RTX 4050)
+# run6b: nova pasta com entrada_run6b.dat e restart.dat -> saida de 52,5 ms do run6
+# run6c: nova pasta com entrada_run6c.dat e restart.dat -> saida 22501 do run6b
+```
+
+## Figuras
+
+Geradas com as macros de `tecplot/` (detalhes no README principal, secao
+"Figuras 3D no Tecplot"):
+
+- `tecplot/dendrita_wbm_fase.mcr`: solido vermelho (iso-superficie phi = 0,5, cor solida
+  com iluminacao Gouraud) e paredes x = 0, y = 0 coloridas pelo PhaseField (azul = liquido).
+- `tecplot/dendrita_wbm.mcr`: a mesma iso-superficie colorida pela concentracao de Cu.
+
+Copie o arquivo de saida para uma pasta do Windows, ajuste `|ARQ|` e `|PNG|` no topo da
+macro e rode `tec360.exe -b -p <macro>`.
+
 ## Resultados
 
 | t (ms) | Figura | Altura da ponta (phi >= 0,5) |
