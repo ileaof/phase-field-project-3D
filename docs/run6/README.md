@@ -1,5 +1,9 @@
 # run6: dendritas colunares 3D com os valores default do 2D
 
+| 3D, t = 75 ms (fase: vermelho = solido, azul = liquido) | 2D, t = 75 ms (Cu, % molar) |
+|---|---|
+| <img src="fase_75ms.png" width="460"> | <img src="caso2D_75ms.png" width="400"> |
+
 Modelo WBM 3D (`source/`) com os mesmos parametros do codigo 2D original do usuario
 (`casos2D/`): Al-Cu, T0 = 922 K, resfriamento continuo de 19,84 K/s, AAA = 0,03,
 h(phi) cubico e ruido positivo celula a celula (linha 43 do entrada.dat: `0 0`).

@@ -14,13 +14,21 @@ O código executa em **CPU (OpenMP multithread)** e, de forma transparente, em
 **GPU (OpenMP *target offloading*)** — a escolha é feita **em tempo de execução**,
 a partir de um **único executável**, sem alterar o algoritmo numérico.
 
-<p align="center">
-  <img src="docs/Phasefield_Al4p5Cu_TecPlot.png" alt="Frente de solidificação dendrítica Al-4.5%Cu (campo de fase 3D) renderizada no Tecplot" width="620">
-</p>
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/run6/fase_75ms.png" alt="Dendritas colunares 3D Al-Cu aos 75 ms, campo de fase no Tecplot" width="460"></td>
+    <td align="center"><img src="docs/run6/caso2D_75ms.png" alt="Dendritas colunares 2D Al-Cu aos 75 ms, concentração de Cu" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><em>3D, t = 75 ms: vermelho = sólido (iso-superfície &phi; = 0,5),<br>azul = líquido (paredes x = 0 e y = 0). Domínio 51×51×105 µm.</em></td>
+    <td align="center"><em>2D, t = 75 ms: concentração de Cu (% molar).<br>Domínio 180×120 µm.</em></td>
+  </tr>
+</table>
 
 <p align="center">
-  <em>Frente de solidificação dendrítica em uma liga Al–4.5%Cu (campo de fase 3D).
-  Vermelho = sólido (&phi;≈1), azul = líquido (&phi;≈0); visualização no Tecplot.</em>
+  <em>Dendritas colunares de Al–Cu com os mesmos parâmetros (T0 = 922 K, resfriamento de
+  19,84 K/s) em 3D e no código 2D original. Detalhes e roteiro para repetir em
+  <a href="docs/run6/">docs/run6</a>.</em>
 </p>
 
 ---
