@@ -144,21 +144,49 @@ OMP_TARGET_OFFLOAD=DISABLED ./phasefield3d_gpu_wsl
 
 ## ⚙️ Configuração (`entrada.dat`)
 
-Cada linha traz o valor lido seguido de um comentário. Parâmetros principais:
+O código lê **o primeiro valor de cada linha** (as linhas 1–3 são cabeçalho). Os valores
+seguintes ficam ao lado como histórico de runs anteriores, e o original fica em
+`entrada.dat.backup`. O `entrada.dat` do repositório é o do **run6** (dendritas de
+`docs/run6/`, liga Al-Cu com os valores default do código 2D):
 
-- Temperaturas (`Tm`, `T0`), calor latente, tensão superficial, difusividades
-- Malha: `Nx`, `Ny`, `Nz` e passos `dx`, `dy`, `dz`
-- `DELTA_EPSLON` (força da anisotropia), coeficiente de partição `Ke`, `C0`
-- `stoptime` (tempo físico de parada)
-- `WriteFileD_timeCounter` (**intervalo de escrita**, em nº de passos)
-- Linha 41 — condição inicial `tipo_inicial  R_semente`:
-  `3` = frente plana na base crescendo em +z; `4` = continuação a partir de `restart.dat`
-  (veja abaixo)
-- Linha 43 — `h_quintico  ruido_tipo`: `0 0` = h(φ) cúbico e ruído positivo célula a
-  célula, iguais ao código 2D original (configuração que gera as dendritas do `docs/run6`)
+| Linha | Parâmetro | Valor (run6) | Observação |
+|---|---|---|---|
+| 4 | `Tm` – temperatura de fusão (K) | 933,3 | Al puro |
+| 5 | `T0` – temperatura inicial (K) | 922 | liquidus TL(C0) = Tm − Me·C0 ≈ 920,8 K; ajustar ao continuar um run |
+| 6 | `delta_H` – calor latente (J/m³) | 0,891×10⁹ | |
+| 7 | `E0` – coef. do gradiente ((J/m)^½) | 1,055×10⁻³ | recalculado em `W0_E0.f90` a partir de `Sigma` e da espessura da interface |
+| 8 | `W0` – altura da barreira (J/m³) | 673,2×10³ | recalculado em `W0_E0.f90` |
+| 9 | `M0` – mobilidade (m³/J s) | 1,9×10⁻³ | recalculada em `auxiliar.f90` (interface fina) |
+| 10–11 | `D_s`, `D_l` – difusividade térmica (m²/s) | 6,59×10⁻⁵ / 3,24×10⁻⁵ | |
+| 12–13 | `Cps`, `Cpl` – calor específico (J/m³K) | 2,93×10⁶ / 2,63×10⁶ | |
+| 14–16 | `Nx`, `Ny`, `Nz` | 340, 340, 700 | 51×51×105 µm; ~4,4 GB na GPU |
+| 17–19 | `dy`, `dx`, `dz` (m) | 1,5×10⁻⁷ | |
+| 20 | `small` | 10⁻²³ | evita divisão por zero |
+| 21 | `ANI` – número de pontas | 4 | anisotropia cúbica (4-fold) |
+| 22 | `it_max` | 10⁹ | o run termina pelo `stoptime` |
+| 23 | `AAA` – amplitude do ruído | 0,03 | referida ao dt do 2D; o código imprime o AAA efetivo (0,02) |
+| 24 | `Teta_0` – direção preferencial (rad) | 0 | |
+| 25 | `DELTA_EPSLON` – força da anisotropia | 0,03 | |
+| 26 | `DELTA_T` (s) | 1,5×10⁻⁷ | **não usado**: o código usa dt = dx²/(7,5·D_liq) (`entrada.f90`) |
+| 27–28 | `D_sol`, `D_liq` – difusividade do soluto (m²/s) | 3×10⁻¹³ / 3×10⁻⁹ | |
+| 29 | `Ke` – coeficiente de partição | 0,14 | |
+| 30 | `Me` – inclinação da liquidus (K/fração molar) | 640 | |
+| 31 | `Vm` – volume molar (m³/mol) | 1,13×10⁻⁵ | |
+| 32 | `R` – constante dos gases | 8,31451 | |
+| 33 | `C0` – concentração inicial (fração molar) | 0,0196 | ~1,96 % Cu |
+| 34 | `Thin_Interface` | 4 | espessura da interface = 4·dx |
+| 35 | `Sigma` – energia de interface (J/m²) | 0,093 | |
+| 36 | `Beta` | 1 | entra no cálculo de `M0` |
+| 37 | `ajuste` | 2 | fator em `E0` e `M0` |
+| 38 | `stoptime` (s) | 0,085 | tempo físico de parada |
+| 39 | intervalo de escrita (passos) | 7500 | ~7,5 ms; ~7,8 GB por arquivo nesta malha |
+| 40 | `TP` – temperatura isotérmica (K) | 905 | só vale com taxa = 0 na linha 42 |
+| 41 | `tipo_inicial  R_semente` | `3  0` | 0 = frente plana (j≤4), 1 = semente esférica central, 2 = 1/8 de semente no canto, 3 = frente plana na base crescendo em +z, 4 = continuação de `restart.dat` (o 2º valor é então o deslocamento em camadas, veja abaixo); nas sementes, o 2º valor é o raio em células |
+| 42 | `taxa  varreduras` | `19.84  2` | resfriamento contínuo TP = T0 − taxa·t (K/s), como no 2D; 2 varreduras da fase por passo, como no 2D |
+| 43 | `h_quintico  ruido_tipo` | `0  0` | h(φ): 1 = quíntico, 0 = cúbico (2D); ruído: 0 = célula a célula de média positiva (2D), 1 = média zero, 2 = suave |
 
-Convenção: o valor lido é o **primeiro** da linha; os valores anteriores ficam ao lado
-como histórico. O original fica em `entrada.dat.backup`.
+Os `entrada.dat` das continuações do run6 (run6b, run6c) estão em `docs/run6/`; deles
+só mudam as linhas 5, 38 e 41.
 
 ### Continuar um run (`tipo_inicial = 4`) e referencial móvel
 
